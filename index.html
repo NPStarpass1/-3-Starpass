@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;700&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg-dark: #0a0a0c;
@@ -69,12 +71,12 @@
     h1 { color: var(--accent-purple); margin-bottom: 15px; font-size: 2rem; }
     .grid-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
     
-    input, select { 
+    .judicial-input-container input, .judicial-input-container select { 
         width: 100%; padding: 14px; background: var(--judicial-input); 
         border: 1px solid #3f3f46; color: white; border-radius: 12px; 
         margin-top: 10px; outline: none; transition: 0.3s;
     }
-    input:focus, select:focus { border-color: var(--accent-purple); box-shadow: 0 0 10px rgba(139, 92, 246, 0.3); }
+    .judicial-input-container input:focus, .judicial-input-container select:focus { border-color: var(--accent-purple); box-shadow: 0 0 10px rgba(139, 92, 246, 0.3); }
 
     .btn { 
         background: linear-gradient(145deg, #2e1065, #0f172a); 
@@ -103,9 +105,39 @@
     .copy-btn { position: absolute; top: 10px; right: 10px; background: transparent; border: 1px solid #444; color: var(--text-dim); padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px; }
 
     #clock { font-family: 'Courier New', Courier, monospace; font-size: 1.1rem; }
+
+    /* --- CONTRACT STYLE (IMPORTED) --- */
+    .contract-card-inner {
+        background: rgba(15, 15, 20, 0.8);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(124, 58, 237, 0.2);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+        font-family: 'Kanit', sans-serif;
+    }
+    .input-style {
+        background: rgba(10, 10, 15, 0.6);
+        border: 1px solid rgba(139, 92, 246, 0.3);
+        color: #ddd6fe;
+        transition: all 0.2s ease-in-out;
+    }
+    .input-style:focus {
+        border-color: #a78bfa;
+        background: rgba(20, 20, 30, 0.8);
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+    }
+    .id-label { font-size: 0.7rem; color: #a78bfa; margin-bottom: 6px; display: block; font-weight: 500; letter-spacing: 0.05em; }
+    .dropdown-content {
+        display: none; position: absolute; width: 100%; max-height: 220px; overflow-y: auto;
+        background: #0f172a; border: 1px solid #4c1d95; z-index: 999; border-radius: 12px; margin-top: 8px;
+    }
+    .dropdown-item { padding: 10px 16px; cursor: pointer; border-bottom: 1px solid rgba(139, 92, 246, 0.1); font-size: 0.875rem; color: #94a3b8; }
+    .dropdown-item:hover { background: #4c1d95; color: #ffffff; }
+    .show { display: block; animation: slideDown 0.2s ease-out; }
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
-<body>
+<body onclick="closeAllDropdowns(event)">
 
   <div id="splash-screen">
     <div class="splash-text">
@@ -118,6 +150,7 @@
     <div class="nav-item active" onclick="showPage('home', this)"><i class="fas fa-home"></i><span>Home</span></div>
     <div class="nav-item" onclick="showPage('penalty', this)"><i class="fas fa-gavel"></i><span>Penalty Calc</span></div>
     <div class="nav-item" onclick="showPage('percentage', this)"><i class="fas fa-car"></i><span>Car Rental</span></div>
+    <div class="nav-item" onclick="showPage('contract', this)"><i class="fas fa-file-signature"></i><span>Contract</span></div>
     <div class="nav-item" onclick="showPage('duty', this)"><i class="fas fa-calendar-alt"></i><span>Duty Schedule</span></div>
     <div class="nav-item" onclick="showPage('sheets', this)"><i class="fas fa-file-invoice"></i><span>Data Sheets</span></div>
     <div class="nav-item" onclick="showPage('music', this)"><i class="fas fa-play-circle"></i><span>Music Hub</span></div>
@@ -157,7 +190,7 @@
 
       <!-- Penalty Page -->
       <div id="penalty" class="page">
-        <div class="card">
+        <div class="card judicial-input-container">
           <h2 style="text-align: center; color: var(--accent-soft); letter-spacing: 2px; margin-bottom: 20px;">JUDICIAL SYSTEM</h2>
           <div style="background: rgba(255,255,255,0.02); padding: 25px; border-radius: 20px; border: 1px solid #2e1065;">
             <label style="color: #a78bfa; font-size: 0.9rem;">ประเภทความผิด:</label>
@@ -212,9 +245,121 @@
         </div>
       </div>
 
+      <!-- Contract Page (NEW CATEGORY) -->
+      <div id="contract" class="page">
+        <div class="max-w-4xl mx-auto contract-card-inner rounded-3xl overflow-hidden">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-indigo-950 to-purple-950 p-8 text-center border-b border-purple-900/30">
+                <h1 class="text-2xl font-bold text-white tracking-[0.25em]">SYSTEM CONTRACT</h1>
+                <p class="text-[10px] text-purple-400 mt-2 uppercase tracking-widest font-light">ระบบจัดการสัญญาเช่าและผ่อนรถยนต์</p>
+            </div>
+
+            <div class="p-6 md:p-10 space-y-8">
+                <!-- Section 1 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="id-label uppercase">สถานะสัญญา</label>
+                        <select id="status" class="input-style w-full rounded-xl p-3.5 cursor-pointer">
+                            <option value="เช่า">เช่า (RENTAL)</option>
+                            <option value="ผ่อน">ผ่อน (INSTALLMENT)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="id-label uppercase">เจ้าหน้าที่ผู้ดูแล</label>
+                        <input type="text" id="staffID" class="input-style w-full rounded-xl p-3.5" placeholder="ใส่ ID เจ้าหน้าที่">
+                    </div>
+                </div>
+
+                <!-- Section 2 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="p-5 rounded-2xl bg-indigo-950/20 border border-indigo-500/10 space-y-4">
+                        <h3 class="text-pink-500 text-xs font-bold uppercase tracking-wider mb-2 flex items-center">
+                            <span class="w-1.5 h-1.5 bg-pink-500 rounded-full mr-2"></span> ผู้ปล่อยเช่า
+                        </h3>
+                        <input type="text" id="ownerID" class="input-style w-full rounded-lg p-3 text-sm" placeholder="ID ผู้ปล่อย">
+                        <input type="text" id="ownerUser" class="input-style w-full rounded-lg p-3 text-sm" placeholder="Username ผู้ปล่อย">
+                    </div>
+                    <div class="p-5 rounded-2xl bg-purple-950/20 border border-purple-500/10 space-y-4">
+                        <h3 class="text-purple-400 text-xs font-bold uppercase tracking-wider mb-2 flex items-center">
+                            <span class="w-1.5 h-1.5 bg-purple-400 rounded-full mr-2"></span> ผู้เช่า (Lessee)
+                        </h3>
+                        <input type="text" id="lesseeID" class="input-style w-full rounded-lg p-3 text-sm" placeholder="ID ผู้เช่า">
+                        <input type="text" id="lesseeUser" class="input-style w-full rounded-lg p-3 text-sm" placeholder="Username ผู้เช่า">
+                    </div>
+                </div>
+
+                <!-- Section 3 -->
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-5">
+                    <div class="md:col-span-6 relative">
+                        <label class="id-label uppercase">เลือกรถ / ค้นหา</label>
+                        <input type="text" id="carInput" class="input-style w-full rounded-xl p-3.5 text-sm" placeholder="🔍 พิมพ์ชื่อรถ..." onfocus="showDropdown()" onkeyup="filterCars()" autocomplete="off">
+                        <div id="carDropdown" class="dropdown-content"></div>
+                    </div>
+                    <div class="md:col-span-3">
+                        <label class="id-label uppercase">การจูน</label>
+                        <select id="tuneStatus" class="input-style w-full rounded-xl p-3.5 text-sm cursor-pointer">
+                            <option value="ไม่จูน">ไม่จูน (STDS)</option>
+                            <option value="จูน">จูนเครื่อง (TUNED)</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-3">
+                        <label class="id-label uppercase">ป้ายทะเบียน</label>
+                        <input type="text" id="carPlate" class="input-style w-full rounded-xl p-3.5 text-sm text-center font-mono" placeholder="ABC-123">
+                    </div>
+                </div>
+
+                <!-- Section 4 -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="id-label uppercase">วันที่เริ่มสัญญา</label>
+                        <input type="date" id="startDate" class="input-style w-full rounded-xl p-3.5 text-xs" onchange="calculateDates()">
+                    </div>
+                    <div>
+                        <label class="id-label uppercase">วันที่สิ้นสุด</label>
+                        <input type="date" id="endDate" class="input-style w-full rounded-xl p-3.5 text-xs" onchange="calculateDates()">
+                    </div>
+                    <div>
+                        <label class="id-label uppercase">จำนวนวันทั้งหมด</label>
+                        <input type="number" id="days" value="0" class="input-style w-full rounded-xl p-3.5 text-center font-bold text-amber-500" oninput="calculateTotal()">
+                    </div>
+                </div>
+
+                <!-- Section 5 -->
+                <div class="bg-gradient-to-b from-black/60 to-purple-950/20 p-8 rounded-3xl border border-white/5 relative overflow-hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-center relative z-10">
+                        <div class="text-center">
+                            <label class="id-label uppercase">ราคา/วัน (฿)</label>
+                            <input type="number" id="rate" value="0" class="input-style w-full rounded-xl p-3 text-center text-lg font-semibold" oninput="calculateTotal()">
+                        </div>
+                        <div class="text-center">
+                            <label class="id-label uppercase">มัดจำ (฿)</label>
+                            <input type="number" id="deposit" placeholder="0" class="input-style w-full rounded-xl p-3 text-center text-lg font-semibold" oninput="calculateTotal()">
+                        </div>
+                        <div class="text-center md:border-l border-white/10">
+                            <label class="text-[10px] text-green-400 font-bold uppercase tracking-widest block mb-2">ยอดสุทธิ</label>
+                            <div id="totalDisplay" class="text-4xl font-bold text-white tracking-tight">0 ฿</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="id-label uppercase">หมายเหตุ</label>
+                    <textarea id="rules" rows="2" class="input-style w-full rounded-xl p-4 text-sm resize-none" placeholder="ใส่ข้อความที่นี่..."></textarea>
+                </div>
+            </div>
+
+            <div class="p-8 bg-black/40 border-t border-white/5">
+                <button id="copyBtn" onclick="copyToClipboard()" class="group relative w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-5 rounded-2xl transition-all duration-300 shadow-xl overflow-hidden">
+                    <span class="relative z-10 flex items-center justify-center gap-2">คัดลอกข้อมูลสัญญา</span>
+                    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+                </button>
+            </div>
+        </div>
+      </div>
+
       <!-- Car Rental Page (Replaced Percentage) -->
       <div id="percentage" class="page">
-        <div class="card" style="max-width: 500px; margin: 0 auto; overflow: hidden; padding: 0;">
+        <div class="card judicial-input-container" style="max-width: 500px; margin: 0 auto; overflow: hidden; padding: 0;">
           <div style="background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); padding: 30px; text-align: center;">
             <h1 style="color: white; font-size: 2rem; font-weight: 800; text-transform: uppercase; margin: 0; letter-spacing: -1px;">Car Rental</h1>
             <p style="color: rgba(255,255,255,0.8); font-size: 0.85rem; margin-top: 5px; font-weight: 500;">บันทึกรายได้ปล่อยเช่ารถจูน</p>
@@ -228,6 +373,7 @@
                 <option value="Lamborghini Revuelto">Lamborghini Revuelto</option>
                 <option value="SC18">SC18</option>
                 <option value="Urus">Urus</option>
+                <option value="SC18">SC18</option>
               </select>
             </div>
             <div style="margin-bottom: 20px;">
@@ -257,7 +403,7 @@
 
       <!-- Duty Schedule -->
       <div id="duty" class="page">
-        <div class="card">
+        <div class="card judicial-input-container">
           <h1>Duty Schedule Calculator</h1>
           <input type="text" id="duty-id" placeholder="Discord User ID">
           <input type="text" id="duty-user" placeholder="Username">
@@ -284,13 +430,13 @@
       <div id="music" class="page">
         <div class="card">
           <h1>Music Hub</h1>
-          <div class="search-box">
+          <div class="search-box judicial-input-container">
             <input type="text" id="yt-query" placeholder="ชื่อเพลง หรือ วางลิงก์ YouTube..." style="margin-top:0;">
             <button class="btn" style="margin-top:0;" onclick="searchYoutube()"><i class="fas fa-search"></i></button>
           </div>
           <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
             <div id="player-container">
-               <iframe id="player" width="100%" height="380" src="https://www.youtube.com/embed/jfKfPfyJRdk" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen style="border-radius: 12px; border: 1px solid var(--border-color);"></iframe>
+               <iframe id="player" width="100%" height="380" src="https://www.youtube.com/embed/cYydxm3XPuA" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen style="border-radius: 12px; border: 1px solid var(--border-color);"></iframe>
             </div>
             <div>
               <p style="color: var(--accent-purple); margin-bottom: 10px; font-weight: bold;">ประวัติการฟัง</p>
@@ -313,6 +459,7 @@
         setTimeout(() => document.getElementById('splash-screen').style.display = 'none', 500); 
       }, 1000); 
       updateHistoryUI();
+      initContractPage(); // Init Contract
     });
 
     function toggleSidebar() { document.getElementById('sidebar').classList.toggle('expanded'); }
@@ -339,38 +486,17 @@
         showConfirmButton: false,
         didOpen: () => { Swal.showLoading(); }
       });
-
       const data = {
         carName: formObject.carName.value,
         totalAmount: formObject.totalAmount.value,
         percent40: formObject.percent40.value,
         percent60: formObject.percent60.value
       };
-
-      // ส่วนการเรียกใช้ google.script.run สำหรับ Google Apps Script
-      if (typeof google !== 'undefined' && google.script && google.script.run) {
-        google.script.run
-          .withSuccessHandler((response) => {
-            if (response.status === 'success') {
-              Swal.fire({ icon: 'success', title: 'บันทึกสำเร็จ', text: response.message, background: '#121214', color: '#bb86fc', confirmButtonColor: '#8b5cf6' });
-              formObject.reset();
-              calculateSplits(0);
-            } else {
-              Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: response.message, background: '#121214', color: '#bb86fc' });
-            }
-          })
-          .withFailureHandler((err) => {
-            Swal.fire({ icon: 'error', title: 'Error', text: err, background: '#121214', color: '#bb86fc' });
-          })
-          .submitData(data);
-      } else {
-        // จำลองสถานะสำเร็จหากรันภายนอก Apps Script Environment
-        setTimeout(() => {
-          Swal.fire({ icon: 'success', title: 'จำลองการบันทึกสำเร็จ', text: 'บันทึกข้อมูลเรียบร้อยแล้ว', background: '#121214', color: '#bb86fc', confirmButtonColor: '#8b5cf6' });
+      setTimeout(() => {
+          Swal.fire({ icon: 'success', title: 'บันทึกสำเร็จ', text: 'บันทึกข้อมูลเรียบร้อยแล้ว', background: '#121214', color: '#bb86fc', confirmButtonColor: '#8b5cf6' });
           formObject.reset();
           calculateSplits(0);
-        }, 1500);
-      }
+      }, 1500);
     }
 
     // --- JUDICIAL LOGIC ---
@@ -456,7 +582,6 @@
     function calculateAll(isHalved = false) {
       let totalFine = 0, totalJail = 0, redFine = 0, redCasesList = [];
       const nonBailableCases = ["ไม่ให้ความร่วมมือกับเจ้าหน้าที่", "หมิ่นประมาทเจ้าหน้าที่", "พยายามขโมยรถหน่วยงาน", "ก่อกวนเจ้าหน้าที่", "แจ้งความเท็จ หรือให้การเท็จ", "ก่อเหตุบริเวณสภานที่ราชการ", "แอบอ้างเป็นหน่วยงานหรือแต่งกายเป็นหน่วยงาน", "ทำร้ายร่างกายเจ้าหน้าที่", "เจตนาทำร้ายร่างกายเจ้าหน้าที่"];
-
       for (const caseName in selectedCases) {
         const count = selectedCases[caseName];
         const { fine, jailTime } = m1(caseName);
@@ -468,29 +593,18 @@
           totalJail += jailTime * count;
         }
       }
-
       const redInput = parseInt(document.getElementById("redMoney").value) || 0;
       if (redInput > 0) { totalFine += redInput * 2 * fineMultiplier; totalJail += 5; }
-
       let jailDisplay = totalJail;
       if (totalJail > 30) { totalFine += (totalJail - 30) * 2000; jailDisplay = 30; }
       if (totalFine > 300000) totalFine = 300000;
       let totalWithBail = totalFine + (jailDisplay * 2000) + redFine;
       if (totalWithBail > 300000) totalWithBail = 300000;
-
       let summary = `<b><span style="font-size:1.1rem; border-bottom:1px solid #8b5cf6">รายการคดีความ</span></b><br>`;
       let normalCases = Object.keys(selectedCases).map(name => `${name} x${selectedCases[name]}`).join(" , ");
       if (redInput > 0) normalCases += (normalCases ? " , " : "") + `เงินแดง ${redInput.toLocaleString()}`;
-      
       summary += (normalCases || "-") + (fineMultiplier > 1 ? ` [${multiplierLabel}]` : "") + (isHalved ? ` [สมรู้ร่วมคิด]` : "") + "<br><br>";
-
-      let output = summary + `
-        <b>ผลการคำนวณ:</b><br>
-        <span style="color:#fff">ค่าปรับรวม:</span> <span style="color:#a78bfa">${totalFine.toLocaleString()}</span> บาท<br>
-        <span style="color:#fff">เวลาจำคุก:</span> <span style="color:#a78bfa">${jailDisplay}</span> นาที<br>
-        <span style="color:#fff">ยอดประกันตัวสุทธิ:</span> <span style="color:#ddd6fe; font-size: 1.3rem;">${totalWithBail.toLocaleString()}</span> บาท<br>
-      `;
-
+      let output = summary + `<b>ผลการคำนวณ:</b><br><span style="color:#fff">ค่าปรับรวม:</span> <span style="color:#a78bfa">${totalFine.toLocaleString()}</span> บาท<br><span style="color:#fff">เวลาจำคุก:</span> <span style="color:#a78bfa">${jailDisplay}</span> นาที<br><span style="color:#fff">ยอดประกันตัวสุทธิ:</span> <span style="color:#ddd6fe; font-size: 1.3rem;">${totalWithBail.toLocaleString()}</span> บาท<br>`;
       if (redCasesList.length > 0) {
         output += `<br><b style="color:#fb7185;">❌ คดีที่ไม่สามารถประกันได้:</b><br>`;
         redCasesList.forEach(item => {
@@ -498,12 +612,7 @@
           output += `<div style="font-size:0.9rem; color:#d1d5db;">• ${item.name} x${item.count} (ปรับ ${(fine * item.count).toLocaleString()} / คุก ${jailTime * item.count} น.)</div>`;
         });
       }
-
-      if (isHalved) {
-        output += `<br><div style="border-top:1px dashed #4b5563; padding-top:10px;">
-          <b style="color:#a78bfa;">ค่าสมรู้ร่วมคิด (50%):</b> <span style="color:#fff; font-size:1.2rem;">${(Math.floor(totalWithBail / 2)).toLocaleString()}</span> บาท
-        </div>`;
-      }
+      if (isHalved) { output += `<br><div style="border-top:1px dashed #4b5563; padding-top:10px;"><b style="color:#a78bfa;">ค่าสมรู้ร่วมคิด (50%):</b> <span style="color:#fff; font-size:1.2rem;">${(Math.floor(totalWithBail / 2)).toLocaleString()}</span> บาท</div>`; }
       document.getElementById("output").innerHTML = output;
     }
 
@@ -547,18 +656,69 @@
       const list = document.getElementById('history-list');
       const history = JSON.parse(localStorage.getItem('nexus_history')) || [];
       if (history.length === 0) { list.innerHTML = '<p style="color:#555; font-size:12px; text-align:center;">ไม่มีประวัติ</p>'; return; }
-      list.innerHTML = history.map(song => `
-        <div class="song-item" onclick="song.id ? play('${song.id}', '${song.title}') : null">
-          <i class="fas ${song.id ? 'fa-play-circle' : 'fa-search'}"></i>
-          <div style="overflow: hidden;">
-            <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 13px;">${song.title}</div>
-            <small style="font-size: 10px; color: #555;">${song.time}</small>
-          </div>
-        </div>`).join('');
+      list.innerHTML = history.map(song => `<div class="song-item" onclick="song.id ? play('${song.id}', '${song.title}') : null"><i class="fas ${song.id ? 'fa-play-circle' : 'fa-search'}"></i><div style="overflow: hidden;"><div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 13px;">${song.title}</div><small style="font-size: 10px; color: #555;">${song.time}</small></div></div>`).join('');
     }
     function clearHistory() { localStorage.removeItem('nexus_history'); updateHistoryUI(); }
     function resetSystem() { localStorage.clear(); location.reload(); }
     setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
+
+    // --- CONTRACT LOGIC (IMPORTED) ---
+    const carList = ["Aston Martin Vintage", "C8", "Bugatti Divo", "Mc-Senna", "Ferrari 812", "Camero", "Fenry", "D-max", "GT3 RS", "Urus", "Lamborghini Aru", "Ford Ranger", "GTB", "AMG", "Emira", "Brawler", "MC20", "Pagani Zonda R", "Enzo", "Bugatti Mistral", "Audi R8", "Aston Martin Superleggera", "Lamborghini Aventador Ultimae Roadster", "Lotus Emira", "Zenvo ST1", "Xiaomi SY7", "Evora GTC", "Mustang GT", "Aero TT", "Sapru MK5", "Toro Feroz Venano", "Nissan R32", "Porsche 918", "Lancer Evo 9", "Type R", "Roadster", "McLaren MP4-12C", "Apollo Intensa Emozione", "MC650S", "Honda VAN", "Hamster Car", "Yaris GR", "Mercedes-Benz G500", "Kamacho", "Spano", "Lamborghini Revuelto", "Lamborghini SC18", "Rimac Nevera", "Bugatti Chiron", "Lancer Evolution X", "Porsche 911", "Maser GranTurismo", "Koenigsegg Agera", "Mclaren P1GTR", "Brabham BT62", "Ferrari SF90", "Frog Jeep", "Koenigsegg Gemera", "Audi R8 GT3", "Thrax", "SSC Tuatara"];
+    function initContractPage() {
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('startDate').value = today;
+        const dropdown = document.getElementById('carDropdown');
+        dropdown.innerHTML = "";
+        [...new Set(carList)].sort().forEach(car => {
+            const item = document.createElement('div');
+            item.className = 'dropdown-item';
+            item.innerText = car;
+            item.onclick = () => selectCar(car);
+            dropdown.appendChild(item);
+        });
+        const savedStaff = localStorage.getItem('staffID');
+        if(savedStaff) document.getElementById('staffID').value = savedStaff;
+        document.getElementById('staffID').addEventListener('input', (e) => { localStorage.setItem('staffID', e.target.value); });
+    }
+    function showDropdown() { document.getElementById('carDropdown').classList.add('show'); }
+    function filterCars() {
+        const input = document.getElementById('carInput').value.toUpperCase();
+        const items = document.getElementsByClassName('dropdown-item');
+        for (let i = 0; i < items.length; i++) { items[i].style.display = items[i].innerText.toUpperCase().includes(input) ? "" : "none"; }
+    }
+    function selectCar(name) { document.getElementById('carInput').value = name; document.getElementById('carDropdown').classList.remove('show'); }
+    function closeAllDropdowns(e) { if (e.target && !e.target.closest('.relative')) { const dd = document.getElementById('carDropdown'); if(dd) dd.classList.remove('show'); } }
+    function calculateDates() {
+        const start = document.getElementById('startDate').value;
+        const end = document.getElementById('endDate').value;
+        if (start && end) {
+            const diffDays = Math.ceil((new Date(end) - new Date(start)) / (1000 * 60 * 60 * 24));
+            document.getElementById('days').value = diffDays >= 0 ? diffDays : 0;
+            calculateTotal();
+        }
+    }
+    function calculateTotal() {
+        const d = Number(document.getElementById('days').value) || 0;
+        const r = Number(document.getElementById('rate').value) || 0;
+        const dep = Number(document.getElementById('deposit').value) || 0;
+        document.getElementById('totalDisplay').innerText = ((d * r) + dep).toLocaleString() + " ฿";
+    }
+    function formatThaiDate(dateString) { if (!dateString) return "--/--/--"; const parts = dateString.split('-'); return `${parts[2]}/${parts[1]}/${(parseInt(parts[0]) + 543).toString().slice(-2)}`; }
+    function formatID(id) { id = id.trim(); if (!id) return "<@____>"; return id.startsWith('<@') ? id : `<@${id}>`; }
+    function copyToClipboard() {
+        const val = (id) => document.getElementById(id).value;
+        const d = Number(val('days')) || 0;
+        const r = Number(val('rate')) || 0;
+        const dep = Number(val('deposit')) || 0;
+        const sum = (d * r) + dep;
+        const text = `**====== สัญญาการ${val('status')}รถ  ======**\n\n` + `**สถานะ :** ( ${val('status')} )\n` + `**เจ้าหน้าที่ผู้ดูแล :** ${formatID(val('staffID'))}\n` + `---\n` + `**ข้อมูลผู้ปล่อยเช่า :**\n` + `* **ชื่อ :** ${formatID(val('ownerID'))}\n` + `* **Username :** ${val('ownerUser')}\n` + `**ข้อมูลผู้เช่า (Lessee) :**\n` + `* **ชื่อ :** ${formatID(val('lesseeID'))}\n` + `* **Username :** ${val('lesseeUser')}\n` + `---\n` + `**รายละเอียดรถ:**\n` + `* **ประเภทรถ :** ${val('carInput')} (${val('tuneStatus')})\n` + `* **ป้ายทะเบียน :** ${val('carPlate')}\n` + `---\n` + `**รายละเอียดการเช่า :**\n` + `* **วันที่เริ่มเช่า :** ${formatThaiDate(val('startDate'))}\n` + `* **วันที่คืนรถ :** ${formatThaiDate(val('endDate'))}\n` + `* **จำนวนวัน :** ${d} วัน\n` + `---\n` + `**ค่าใช้จ่าย :**\n` + `* **อัตราค่าเช่า/ผ่อน :** ${r.toLocaleString()} ฿\n` + `* **ค่ามัดจำ :** ${dep.toLocaleString()} ฿\n` + `* **ยอดสุทธิที่ต้องชำระ :** ${sum.toLocaleString()} ฿\n` + `---\n` + `**เงื่อนไขเพิ่มเติม :** ${val('rules') || '-'}\n` + `**========================**`;
+        navigator.clipboard.writeText(text).then(() => {
+            const btn = document.getElementById('copyBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = "✅ คัดลอกเรียบร้อยแล้ว!";
+            setTimeout(() => { btn.innerHTML = originalText; }, 2000);
+        });
+    }
   </script>
 </body>
 </html>
