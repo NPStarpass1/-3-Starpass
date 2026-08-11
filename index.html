@@ -1,298 +1,334 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg-dark: #0a0a0c;
-      --sidebar-bg: #121214;
-      --accent-purple: #bb86fc;
-      --accent-soft: #a78bfa;
-      --text-main: #e0e0e0;
-      --text-dim: #a0a0a0;
-      --card-bg: #1e1e22;
-      --border-color: #333;
-      --judicial-input: #161625;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contract Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Kanit', sans-serif; 
+            background-color: #020203;
+            background-image: radial-gradient(circle at 50% -20%, #1e1b4b 0%, #020203 80%);
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+        .contract-card {
+            background: rgba(15, 15, 20, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(124, 58, 237, 0.2);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+        }
+        .input-style {
+            background: rgba(10, 10, 15, 0.6);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            color: #ddd6fe;
+            transition: all 0.2s ease-in-out;
+        }
+        .input-style:focus {
+            border-color: #a78bfa;
+            background: rgba(20, 20, 30, 0.8);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+        }
+        .input-disabled {
+            background: rgba(30, 27, 75, 0.4) !important;
+            color: #a78bfa !important;
+            border-color: rgba(139, 92, 246, 0.15) !important;
+            cursor: not-allowed;
+        }
+        .id-label { 
+            font-size: 0.7rem; 
+            color: #a78bfa; 
+            margin-bottom: 6px; 
+            display: block; 
+            font-weight: 500; 
+            letter-spacing: 0.05em;
+        }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #020203; }
+        ::-webkit-scrollbar-thumb { background: #4c1d95; border-radius: 10px; }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { 
-      font-family: 'Sarabun', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-      background: var(--bg-dark); 
-      color: var(--text-main); 
-      display: flex; 
-      height: 100vh; 
-      overflow: hidden;
-    }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            width: 100%;
+            max-height: 220px;
+            overflow-y: auto;
+            background: #0f172a;
+            border: 1px solid #4c1d95;
+            z-index: 999;
+            border-radius: 12px;
+            margin-top: 8px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+        .dropdown-item {
+            padding: 10px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid rgba(139, 92, 246, 0.1);
+            font-size: 0.875rem;
+            color: #94a3b8;
+        }
+        .dropdown-item:hover {
+            background: #4c1d95;
+            color: #ffffff;
+        }
+        .show { display: block; animation: slideDown 0.2s ease-out; }
+        @keyframes slideDown { 
+            from { opacity: 0; transform: translateY(-5px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
 
-    /* --- Splash Screen --- */
-    #splash-screen {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: #000; display: flex; flex-direction: column;
-      justify-content: center; align-items: center; z-index: 9999;
-      transition: opacity 0.5s ease-out;
-    }
-
-    /* --- Sidebar --- */
-    #sidebar {
-      width: 70px; background: var(--sidebar-bg); display: flex;
-      flex-direction: column; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      border-right: 1px solid var(--border-color); z-index: 1000;
-    }
-    #sidebar.expanded { width: 240px; }
-    .nav-header { height: 70px; display: flex; align-items: center; padding: 0 23px; cursor: pointer; color: var(--accent-purple); }
-    .nav-item {
-      height: 60px; display: flex; align-items: center; padding: 0 25px;
-      cursor: pointer; color: var(--text-dim); transition: 0.3s;
-    }
-    .nav-item i { min-width: 30px; font-size: 20px; }
-    .nav-item span { margin-left: 20px; opacity: 0; transition: 0.2s; white-space: nowrap; }
-    #sidebar.expanded .nav-item span { opacity: 1; }
-    .nav-item:hover { background: rgba(255, 255, 255, 0.05); color: var(--accent-purple); }
-    .nav-item.active { color: var(--accent-purple); background: rgba(255, 255, 255, 0.08); border-right: 4px solid var(--accent-purple); }
-
-    /* --- Main Wrapper --- */
-    #main-wrapper { flex-grow: 1; display: flex; flex-direction: column; overflow-y: auto; }
-    header {
-      height: 70px; background: var(--sidebar-bg); display: flex; align-items: center;
-      padding: 0 30px; justify-content: space-between; border-bottom: 1px solid var(--border-color);
-    }
-    .content-area { padding: 30px; width: 100%; max-width: 1200px; margin: 0 auto; }
-    .page { display: none; animation: fadeIn 0.4s ease; }
-    .page.active { display: block; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-    /* --- Components --- */
-    .card { background: var(--card-bg); padding: 30px; border-radius: 15px; border: 1px solid var(--border-color); margin-bottom: 20px; }
-    h1 { color: var(--accent-purple); margin-bottom: 15px; font-size: 2rem; }
-    .grid-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
-    
-    .judicial-input-container input, .judicial-input-container select { 
-        width: 100%; padding: 14px; background: var(--judicial-input); 
-        border: 1px solid #3f3f46; color: white; border-radius: 12px; 
-        margin-top: 10px; outline: none; transition: 0.3s;
-    }
-    .judicial-input-container input:focus, .judicial-input-container select:focus { border-color: var(--accent-purple); box-shadow: 0 0 10px rgba(139, 92, 246, 0.3); }
-
-    .btn { 
-        background: linear-gradient(145deg, #2e1065, #0f172a); 
-        color: #ddd6fe; border: 1px solid #8b5cf6; padding: 12px 25px; 
-        border-radius: 12px; cursor: pointer; font-weight: bold; 
-        margin-top: 15px; transition: 0.3s; text-transform: uppercase;
-    }
-    .btn:hover { background: linear-gradient(145deg, #8b5cf6, #6d28d9); color: #fff; box-shadow: 0 0 15px rgba(139, 92, 246, 0.4); }
-
-    /* Judicial Specific */
-    .case-item { display: flex; align-items: center; justify-content: space-between; margin-top: 15px; background: rgba(139, 92, 246, 0.05); padding: 15px 20px; border-radius: 15px; border-left: 4px solid #8b5cf6; }
-    .case-name { flex: 1; font-size: 16px; color: #fff; }
-    .case-buttons button { margin-left: 8px; padding: 5px 15px; font-size: 18px; background: #161625; color: white; border: 1px solid #444; border-radius: 8px; cursor: pointer; }
-    
-    #output { margin-top: 30px; background: rgba(139, 92, 246, 0.05); border: 1px solid rgba(139, 92, 246, 0.3); padding: 30px; border-radius: 20px; line-height: 2; font-size: 1.1rem; }
-    .control-buttons { margin-top: 30px; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
-    .control-buttons button { margin: 0; font-size: 13px; background: #161625; color: #a1a1aa; border: 1px solid #3f3f46; border-radius: 10px; padding: 10px; cursor: pointer; }
-    .active-multiplier { background: linear-gradient(145deg, #8b5cf6, #6d28d9) !important; color: #fff !important; border-color: #fff !important; }
-
-    /* Music UI */
-    .search-box { display: flex; gap: 10px; margin-bottom: 20px; }
-    .song-item { padding: 12px; border-radius: 8px; cursor: pointer; margin-bottom: 5px; background: rgba(255,255,255,0.03); display: flex; align-items: center; gap: 10px; }
-    .song-item:hover { background: rgba(187, 134, 252, 0.1); color: var(--accent-purple); }
-
-    .result-box { background: #0d0d0f; border: 1px dashed var(--accent-purple); padding: 20px; border-radius: 10px; margin-top: 20px; position: relative; display: none; }
-    .copy-btn { position: absolute; top: 10px; right: 10px; background: transparent; border: 1px solid #444; color: var(--text-dim); padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px; }
-
-    #clock { font-family: 'Courier New', Courier, monospace; font-size: 1.1rem; }
-
-    /* --- CONTRACT STYLE (IMPORTED) --- */
-    .contract-card-inner {
-        background: rgba(15, 15, 20, 0.8);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(124, 58, 237, 0.2);
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
-        font-family: 'Kanit', sans-serif;
-    }
-    .input-style {
-        background: rgba(10, 10, 15, 0.6);
-        border: 1px solid rgba(139, 92, 246, 0.3);
-        color: #ddd6fe;
-        transition: all 0.2s ease-in-out;
-    }
-    .input-style:focus {
-        border-color: #a78bfa;
-        background: rgba(20, 20, 30, 0.8);
-        outline: none;
-        box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
-    }
-    .id-label { font-size: 0.7rem; color: #a78bfa; margin-bottom: 6px; display: block; font-weight: 500; letter-spacing: 0.05em; }
-    .dropdown-content {
-        display: none; position: absolute; width: 100%; max-height: 220px; overflow-y: auto;
-        background: #0f172a; border: 1px solid #4c1d95; z-index: 999; border-radius: 12px; margin-top: 8px;
-    }
-    .dropdown-item { padding: 10px 16px; cursor: pointer; border-bottom: 1px solid rgba(139, 92, 246, 0.1); font-size: 0.875rem; color: #94a3b8; }
-    .dropdown-item:hover { background: #4c1d95; color: #ffffff; }
-    .show { display: block; animation: slideDown 0.2s ease-out; }
-    @keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
-  </style>
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 99999;
+            justify-content: center;
+            align-items: center;
+        }
+        .loading-box {
+            background: #0f0f14;
+            border: 1px solid rgba(139, 92, 246, 0.4);
+            padding: 30px 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(139, 92, 246, 0.2);
+            border-top: 4px solid #a78bfa;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .checkmark-wrapper {
+            width: 50px;
+            height: 50px;
+            margin: 0 auto;
+        }
+        .checkmark {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: block;
+            stroke-width: 3;
+            stroke: #10b981;
+            stroke-miterlimit: 10;
+            box-shadow: inset 0px 0px 0px #10b981;
+            animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
+        }
+        .checkmark-circle {
+            stroke-dasharray: 166;
+            stroke-dashoffset: 166;
+            stroke-width: 3;
+            stroke-miterlimit: 10;
+            stroke: #10b981;
+            fill: none;
+            animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+        }
+        .checkmark-check {
+            transform-origin: 50% 50%;
+            stroke-dasharray: 48;
+            stroke-dashoffset: 48;
+            animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+        }
+        @keyframes stroke { 100% { stroke-dashoffset: 0; } }
+        @keyframes scale { 0%, 100% { transform: none; } 50% { transform: scale3d(1.1, 1.1, 1); } }
+    </style>
 </head>
-<body onclick="closeAllDropdowns(event)">
+<body class="p-4 md:p-8" onclick="closeAllDropdowns(event)">
 
-  <div id="splash-screen">
-    <div class="splash-text">
-        <h1 style="letter-spacing: 8px; color: white; text-transform: uppercase;">Welcome Police XinTown</h1>
+    <!-- Top Role Switcher Bar -->
+    <div class="max-w-6xl mx-auto mb-6 flex flex-col sm:flex-row justify-between items-center bg-indigo-950/40 p-4 rounded-2xl border border-indigo-500/20 gap-4">
+        <div class="flex items-center gap-3">
+            <span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span class="text-sm font-semibold text-indigo-200">โหมดการใช้งานปัจจุบัน:</span>
+            <span id="currentRoleBadge" class="bg-amber-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">ประชาชน (Public View)</span>
+            <span id="loggedInUserDisplay" class="text-xs text-purple-300 font-mono hidden"></span>
+        </div>
+        <div class="flex gap-2">
+            <button onclick="loginWithDiscord()" id="btnLoginDiscord" class="px-4 py-2 text-xs font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition-all shadow-lg flex items-center gap-2">
+                <svg class="w-4 h-4 fill-current" viewBox="0 0 127.14 96.36"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1,105.25,105.25,0,0,0,32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,45.92,53.86,53,48.81,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,45.92,96.09,53,91.08,65.69,84.69,65.69Z"/></svg>
+                Login ผ่าน Discord
+            </button>
+            <button onclick="openRoleModal()" id="btnManageRoles" class="hidden px-4 py-2 text-xs font-bold rounded-xl bg-amber-600 hover:bg-amber-500 text-white transition-all shadow-lg">
+                ⚙️ จัดการสิทธิ์สมาชิกรถ
+            </button>
+            <button onclick="openLoginModal('admin')" id="btnRoleAdmin" class="px-4 py-2 text-xs font-bold rounded-xl bg-gray-800 text-gray-400 hover:bg-gray-700 transition-all">เข้าสู่ระบบผู้ดูแล (Admin)</button>
+            <button onclick="openLoginModal('staff')" id="btnRoleStaff" class="px-4 py-2 text-xs font-bold rounded-xl bg-gray-800 text-gray-400 hover:bg-gray-700 transition-all">เข้าสู่ระบบเจ้าหน้าที่ (Staff)</button>
+            <button onclick="switchRole('public')" id="btnRolePublic" class="px-4 py-2 text-xs font-bold rounded-xl bg-purple-600 text-white transition-all shadow-lg">โหมดประชาชน</button>
+            <button onclick="logout()" id="btnLogout" class="hidden px-4 py-2 text-xs font-bold rounded-xl bg-rose-600 hover:bg-rose-500 text-white transition-all shadow-lg">ออกจากระบบ</button>
+        </div>
     </div>
-  </div>
 
-  <nav id="sidebar">
-    <div class="nav-header" onclick="toggleSidebar()"><i class="fas fa-bars"></i></div>
-    <div class="nav-item active" onclick="showPage('home', this)"><i class="fas fa-home"></i><span>Home</span></div>
-    <div class="nav-item" onclick="showPage('penalty', this)"><i class="fas fa-gavel"></i><span>Penalty Calc</span></div>
-    <div class="nav-item" onclick="showPage('percentage', this)"><i class="fas fa-car"></i><span>Car Rental</span></div>
-    <div class="nav-item" onclick="showPage('contract', this)"><i class="fas fa-file-signature"></i><span>Contract</span></div>
-    <div class="nav-item" onclick="showPage('duty', this)"><i class="fas fa-calendar-alt"></i><span>Duty Schedule</span></div>
-    <div class="nav-item" onclick="showPage('sheets', this)"><i class="fas fa-file-invoice"></i><span>Data Sheets</span></div>
-    <div class="nav-item" onclick="showPage('music', this)"><i class="fas fa-play-circle"></i><span>Music Hub</span></div>
-    <div style="margin-top: auto;" class="nav-item" onclick="showPage('settings', this)"><i class="fas fa-cog"></i><span>Settings</span></div>
-  </nav>
-
-  <div id="main-wrapper">
-    <header>
-      <h2 id="page-title">Home</h2>
-      <div id="clock" style="color: var(--accent-purple); font-weight: bold;"></div>
-    </header>
-
-    <div class="content-area">
-      <!-- Home Page -->
-      <div id="home" class="page active">
-        <div class="card" style="border-left: 5px solid var(--accent-purple);">
-          <h1>Welcome to Xin Town System</h1>
-          <p>ยินดีต้อนรับเจ้าหน้าที่ทุกท่านเข้าสู่ระบบจัดการส่วนกลาง Police Xin Town</p>
+    <!-- MAIN CONTAINER -->
+    <div class="max-w-6xl mx-auto contract-card rounded-3xl overflow-hidden mb-10">
+        <div class="bg-gradient-to-r from-indigo-950 to-purple-950 p-8 text-center border-b border-purple-900/30 relative">
+            <h1 class="text-2xl font-bold text-white tracking-[0.25em]">CAR RENTAL & INSTALLMENT SYSTEM</h1>
+            <p class="text-[10px] text-purple-400 mt-2 uppercase tracking-widest font-light">ระบบจัดการสัญญาเช่าและผ่อนรถยนต์</p>
         </div>
-        <div class="grid-row">
-          <div class="card">
-            <h3><i class="fas fa-info-circle" style="color: var(--accent-purple);"></i> Description</h3>
-            <p style="margin-top: 10px; font-size: 0.95rem; color: var(--text-dim);">
-              ระบบส่วนกลางสำหรับเจ้าหน้าที่ เพื่อใช้ในการอำนวยความสะดวกด้านงานเอกสาร การคำนวณค่าปรับตามกฎหมาย และการจัดการตารางปฏิบัติงานอย่างมีประสิทธิภาพ
-            </p>
-          </div>
-          <div class="card">
-            <h3><i class="fas fa-server" style="color: var(--accent-purple);"></i> Data Logs</h3>
-            <div style="margin-top: 10px; font-size: 0.9rem; line-height: 1.8;">
-              <p><i class="fas fa-user-shield"></i> Role: <span style="color: var(--accent-purple);">Authorized Officer</span></p>
-              <p><i class="fas fa-clock"></i> Last Access: <span id="last-access">29/4/2569 20:00:53</span></p>
-              <p><i class="fas fa-signal"></i> Database: <span style="color: #4CAF50;">Connected</span></p>
+
+        <!-- PUBLIC VIEW SECTION -->
+        <div id="publicSection" class="p-6 md:p-10 space-y-6">
+            <div class="bg-purple-950/20 border border-purple-500/20 rounded-2xl p-6 text-center space-y-4">
+                <h2 class="text-lg font-bold text-purple-300">🔍 ค้นหาสัญญาของคุณ</h2>
+                <div class="flex max-w-md mx-auto gap-2">
+                    <input type="text" id="searchContractInput" placeholder="ใส่เลขที่สัญญา หรือ Username ผู้เช่า..." class="input-style w-full rounded-xl p-3 text-sm">
+                    <button onclick="searchContract()" class="bg-purple-600 hover:bg-purple-500 text-white px-6 py-3 rounded-xl text-sm font-bold transition">ค้นหา</button>
+                </div>
             </div>
-          </div>
+            <div id="searchResults" class="space-y-4"></div>
         </div>
-      </div>
 
-      <!-- Penalty Page -->
-      <div id="penalty" class="page">
-        <div class="card judicial-input-container">
-          <h2 style="text-align: center; color: var(--accent-soft); letter-spacing: 2px; margin-bottom: 20px;">JUDICIAL SYSTEM</h2>
-          <div style="background: rgba(255,255,255,0.02); padding: 25px; border-radius: 20px; border: 1px solid #2e1065;">
-            <label style="color: #a78bfa; font-size: 0.9rem;">ประเภทความผิด:</label>
-            <select id="caseSelect">
-              <option value="">-- กรุณาเลือกคดีความ --</option>
-              <option>ทะเลาะวิวาท</option>
-              <option>สร้างความวุ่นวาย ทุกรูปแบบ</option>
-              <option>ไล่หน้ากาก หรือปิดบังใบหน้า</option>
-              <option>เจตนาทําร้ายร่างกาย - ประชาชน</option>
-              <option>ลักพาตัว</option>
-              <option>แสดงอาวุธในที่สาธารณะ</option>
-              <option>พื้นที่สุ่มเสี่ยง</option>
-              <option>หลบหนีการจับกุม</option>
-              <option>ยัดเยียดสิ่งของผิดกฎหมายให้ผู้อื่น</option>
-              <option>โจรกรรมยานพาหนะ</option>
-              <option>ยักยอกทรัพย์</option>
-              <option>ทําลายทรัพย์สินผู้อื่น</option>
-              <option>โชว์ของงานดำต่อหน้าเจ้าหน้าที่</option>
-              <option>ความผิดฐานบุกรุกเคหะสถาน / บุกรุกบ้าน</option>
-              <option>ครอบครองปูน</option>
-              <option>ครอบครองสายไฟ</option>
-              <option>ไม่ใส่สูทหรือชุดที่บ่งบอกถึงสัญลักษณ์แก๊งตนเอง</option>
-              <option>ถือครอง Painkiller ในตัว</option>
-              <option>ครอบครอง Capsule Blue,Red,Green</option>
-              <option>ครอบครอง Lockpick</option>
-              <option>ไม่ให้ความร่วมมือกับเจ้าหน้าที่</option>
-              <option>หมิ่นประมาทเจ้าหน้าที่</option>
-              <option>พยายามขโมยรถหน่วยงาน</option>
-              <option>ก่อกวนเจ้าหน้าที่</option>
-              <option>ก่อเหตุบริเวณสภานที่ราชการ</option>
-              <option>แอบอ้างเป็นหน่วยงานหรือแต่งกายเป็นหน่วยงาน</option>
-              <option>แจ้งความเท็จ หรือให้การเท็จ</option>
-              <option>ทำร้ายร่างกายเจ้าหน้าที่</option>
-              <option>เจตนาทำร้ายร่างกายเจ้าหน้าที่</option>
-            </select>
-            <button class="btn" onclick="addSelectedCase()" style="width: 150px; margin-top: 15px;">+ เพิ่มคดี</button>
-            <label style="display:block; margin-top: 20px; color: #a78bfa; font-size: 0.9rem;">จำนวนเงินแดง:</label>
-            <input type="number" id="redMoney" placeholder="0.00" style="margin-top: 5px;">
-          </div>
-          <div id="caseList"></div>
-          <button class="btn" onclick="calculateAll()" style="width: 100%; height: 60px; font-size: 20px; background: linear-gradient(145deg, #1e1b4b, #020617); margin-top: 30px;">คำนวณผลการพิจารณา</button>
-          <div id="output">ผลการคำนวณจะปรากฏที่นี่...</div>
-          <div class="control-buttons">
-            <button onclick="setFineMultiplier(1, this, 'ปกติ')" class="active-multiplier">ค่าปรับปกติ</button>
-            <button onclick="setFineMultiplier(2, this, 'นอกเมือง x2')">นอกเมือง (x2)</button>
-            <button onclick="setFineMultiplier(4, this, 'รถทึบหรือขึ้นเขา x4')">รถทึบหรือขึ้นเขา (x4)</button>
-            <button onclick="setFineMultiplier(6, this, 'ขึ้นเขา/นอกเมือง x6')">ขึ้นเขา/นอกเมือง (x6)</button>
-            <button onclick="setFineMultiplier(8, this, 'รถทึบ/ขึ้นเขา x8')">รถทึบ/ขึ้นเขา (x8)</button>
-            <button onclick="setFineMultiplier(10, this, 'ก่อนรีเซิร์ฟ x10')">ก่อนรีเซิร์ฟ 10 นาที (x10)</button>
-            <button onclick="calculateAll(true)" style="grid-column: span 1; border-color: #7c3aed;">สมรู้ร่วมคิด (หาร 2)</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Contract Page (NEW CATEGORY) -->
-      <div id="contract" class="page">
-        <div class="max-w-4xl mx-auto contract-card-inner rounded-3xl overflow-hidden">
-            <!-- Header -->
-            <div class="bg-gradient-to-r from-indigo-950 to-purple-950 p-8 text-center border-b border-purple-900/30">
-                <h1 class="text-2xl font-bold text-white tracking-[0.25em]">SYSTEM CONTRACT</h1>
-                <p class="text-[10px] text-purple-400 mt-2 uppercase tracking-widest font-light">ระบบจัดการสัญญาเช่าและผ่อนรถยนต์</p>
+        <!-- STAFF & ADMIN VIEW SECTION -->
+        <div id="staffSection" class="hidden p-6 md:p-10 space-y-8">
+            <div class="flex flex-wrap gap-2 border-b border-purple-900/40 pb-4">
+                <button onclick="switchTab('rent')" id="tabRent" class="px-5 py-2.5 rounded-xl text-xs font-bold bg-purple-600 text-white transition-all">🚘 รายการเช่า (Rent)</button>
+                <button onclick="switchTab('installment')" id="tabInstallment" class="px-5 py-2.5 rounded-xl text-xs font-bold bg-gray-800 text-gray-400 hover:bg-gray-700 transition-all">💳 รายการผ่อน (Installment)</button>
+                <button onclick="switchTab('breached')" id="tabBreached" class="px-5 py-2.5 rounded-xl text-xs font-bold bg-gray-800 text-gray-400 hover:bg-gray-700 transition-all">🚫 สัญญาบิด (Breached)</button>
+                <button onclick="switchTab('expired')" id="tabExpired" class="px-5 py-2.5 rounded-xl text-xs font-bold bg-gray-800 text-gray-400 hover:bg-gray-700 transition-all">⏰ หมดสัญญา (Expired)</button>
+                <button onclick="openFormModal()" class="ml-auto px-5 py-2.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white transition-all shadow-lg">+ เพิ่มสัญญาใหม่</button>
             </div>
 
-            <div class="p-6 md:p-10 space-y-8">
-                <!-- Section 1 -->
+            <div class="overflow-x-auto rounded-2xl border border-purple-900/30">
+                <table class="w-full text-xs text-left">
+                    <thead class="bg-indigo-950/60 text-purple-300 uppercase border-b border-purple-900/50">
+                        <tr>
+                            <th class="p-4">เลขสัญญา</th>
+                            <th class="p-4">ประเภท</th>
+                            <th class="p-4">ผู้เช่า/ผ่อน</th>
+                            <th class="p-4">รถยนต์ / ทะเบียนเดิม</th>
+                            <th id="thExtraPlate" class="p-4 hidden text-pink-400">ทะเบียนใหม่ (บิด)</th>
+                            <th id="thExtraReason" class="p-4 hidden text-amber-400">เหตุผลการบิด</th>
+                            <th class="p-4">วันสิ้นสุด</th>
+                            <th class="p-4 text-right">ยอดรวม</th>
+                            <th class="p-4 text-center">ชำระเงิน</th>
+                            <th class="p-4 text-center">สถานะ</th>
+                            <th class="p-4 text-center">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="contractTableBody" class="divide-y divide-purple-900/20 text-gray-300"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN ROLE MANAGEMENT MODAL -->
+    <div id="roleManagerModal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4 z-50">
+        <div class="contract-card max-w-md w-full rounded-3xl p-6 space-y-5 border border-purple-500/30">
+            <div class="flex justify-between items-center border-b border-purple-900/40 pb-3">
+                <h3 class="text-lg font-bold text-white">⚙️ จัดการสิทธิ์ผู้ใช้งาน (Admin Only)</h3>
+                <button onclick="closeRoleModal()" class="text-gray-400 hover:text-white font-bold">✕</button>
+            </div>
+            <form onsubmit="handleSaveRole(event)" class="space-y-4">
+                <div>
+                    <label class="id-label uppercase">Discord ID ผู้ใช้งาน</label>
+                    <input type="text" id="targetDiscordId" class="input-style w-full rounded-xl p-3 text-sm" placeholder="กรอก Discord ID..." required>
+                </div>
+                <div>
+                    <label class="id-label uppercase">เลือกบทบาท (Role)</label>
+                    <select id="selectedRole" class="input-style w-full rounded-xl p-3 text-sm cursor-pointer">
+                        <option value="public">ประชาชน (Public)</option>
+                        <option value="staff">เจ้าหน้าที่ (Staff)</option>
+                        <option value="admin">ผู้ดูแลระบบ (Admin)</option>
+                    </select>
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="closeRoleModal()" class="w-1/2 bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold py-3 rounded-xl text-xs">ยกเลิก</button>
+                    <button type="submit" class="w-1/2 bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded-xl text-xs shadow-lg">บันทึกสิทธิ์</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- LOGIN MODAL -->
+    <div id="loginModal" class="fixed inset-0 bg-black/85 backdrop-blur-md hidden flex items-center justify-center p-4 z-50">
+        <div class="contract-card max-w-md w-full rounded-3xl p-8 space-y-6 border border-purple-500/30">
+            <div class="text-center">
+                <h3 id="loginModalTitle" class="text-xl font-bold text-white tracking-wider">เข้าสู่ระบบ</h3>
+                <p id="loginModalSub" class="text-xs text-purple-400 mt-1">กรุณากรอกชื่อและรหัสผ่านเพื่อเข้าใช้งาน</p>
+            </div>
+
+            <form onsubmit="handleLogin(event)" class="space-y-4">
+                <input type="hidden" id="loginRoleType" value="">
+                <div>
+                    <label class="id-label uppercase">ชื่อผู้ใช้งาน (Username / ID)</label>
+                    <input type="text" id="loginUsername" class="input-style w-full rounded-xl p-3.5 text-sm" placeholder="กรอกชื่อผู้ใช้..." required autocomplete="off">
+                </div>
+                <div>
+                    <label class="id-label uppercase">รหัสผ่าน (Password)</label>
+                    <input type="password" id="loginPassword" class="input-style w-full rounded-xl p-3.5 text-sm" placeholder="กรอกรหัสผ่าน..." required>
+                </div>
+                <div id="loginErrorMessage" class="hidden p-3 bg-rose-950/60 border border-rose-500/40 rounded-xl text-xs text-rose-300 text-center font-bold">
+                    ❌ ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง!
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="closeLoginModal()" class="w-1/2 bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold py-3.5 rounded-xl text-xs transition">ยกเลิก</button>
+                    <button type="submit" class="w-1/2 bg-purple-600 hover:bg-purple-500 text-white font-bold py-3.5 rounded-xl text-xs transition shadow-lg">เข้าสู่ระบบ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- FORM MODAL (สร้าง/แก้ไข สัญญา) -->
+    <div id="formModal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4 z-50 overflow-y-auto">
+        <div class="contract-card max-w-4xl w-full rounded-3xl my-8 overflow-hidden border border-purple-500/30 max-h-[90vh] overflow-y-auto">
+            <div class="p-6 bg-gradient-to-r from-indigo-950 to-purple-950 border-b border-purple-900/30 flex justify-between items-center">
+                <h3 id="modalTitle" class="text-lg font-bold text-white tracking-wider">สร้างสัญญาใหม่</h3>
+                <button onclick="closeFormModal()" class="text-gray-400 hover:text-white text-xl font-bold">✕</button>
+            </div>
+            
+            <form id="contractForm" onsubmit="saveContract(event)" class="p-6 md:p-8 space-y-6">
+                <input type="hidden" id="editIndex" value="-1">
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="id-label uppercase">สถานะสัญญา</label>
-                        <select id="status" class="input-style w-full rounded-xl p-3.5 cursor-pointer">
+                        <label class="id-label uppercase">ประเภทสัญญา</label>
+                        <select id="status" class="input-style w-full rounded-xl p-3.5 cursor-pointer" onchange="toggleMode()">
                             <option value="เช่า">เช่า (RENTAL)</option>
                             <option value="ผ่อน">ผ่อน (INSTALLMENT)</option>
                         </select>
                     </div>
                     <div>
                         <label class="id-label uppercase">เจ้าหน้าที่ผู้ดูแล</label>
-                        <input type="text" id="staffID" class="input-style w-full rounded-xl p-3.5" placeholder="ใส่ ID เจ้าหน้าที่">
+                        <input type="text" id="staffID" class="input-style w-full rounded-xl p-3.5" placeholder="ใส่ ID เจ้าหน้าที่" required>
                     </div>
                 </div>
 
-                <!-- Section 2 -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="p-5 rounded-2xl bg-indigo-950/20 border border-indigo-500/10 space-y-4">
-                        <h3 class="text-pink-500 text-xs font-bold uppercase tracking-wider mb-2 flex items-center">
+                        <h3 id="labelOwnerHeader" class="text-pink-500 text-xs font-bold uppercase tracking-wider mb-2 flex items-center">
                             <span class="w-1.5 h-1.5 bg-pink-500 rounded-full mr-2"></span> ผู้ปล่อยเช่า
                         </h3>
-                        <input type="text" id="ownerID" class="input-style w-full rounded-lg p-3 text-sm" placeholder="ID ผู้ปล่อย">
-                        <input type="text" id="ownerUser" class="input-style w-full rounded-lg p-3 text-sm" placeholder="Username ผู้ปล่อย">
+                        <input type="text" id="ownerID" class="input-style w-full rounded-lg p-3 text-sm" placeholder="ID ผู้ปล่อย" required>
+                        <input type="text" id="ownerUser" class="input-style w-full rounded-lg p-3 text-sm" placeholder="Username ผู้ปล่อย" required>
                     </div>
                     <div class="p-5 rounded-2xl bg-purple-950/20 border border-purple-500/10 space-y-4">
-                        <h3 class="text-purple-400 text-xs font-bold uppercase tracking-wider mb-2 flex items-center">
+                        <h3 id="labelLesseeHeader" class="text-purple-400 text-xs font-bold uppercase tracking-wider mb-2 flex items-center">
                             <span class="w-1.5 h-1.5 bg-purple-400 rounded-full mr-2"></span> ผู้เช่า (Lessee)
                         </h3>
-                        <input type="text" id="lesseeID" class="input-style w-full rounded-lg p-3 text-sm" placeholder="ID ผู้เช่า">
-                        <input type="text" id="lesseeUser" class="input-style w-full rounded-lg p-3 text-sm" placeholder="Username ผู้เช่า">
+                        <input type="text" id="lesseeID" class="input-style w-full rounded-lg p-3 text-sm" placeholder="ID ผู้เช่า/ผ่อน" required>
+                        <input type="text" id="lesseeUser" class="input-style w-full rounded-lg p-3 text-sm" placeholder="Username ผู้เช่า/ผ่อน" required>
                     </div>
                 </div>
 
-                <!-- Section 3 -->
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-5">
                     <div class="md:col-span-6 relative">
                         <label class="id-label uppercase">เลือกรถ / ค้นหา</label>
-                        <input type="text" id="carInput" class="input-style w-full rounded-xl p-3.5 text-sm" placeholder="🔍 พิมพ์ชื่อรถ..." onfocus="showDropdown()" onkeyup="filterCars()" autocomplete="off">
+                        <input type="text" id="carInput" class="input-style w-full rounded-xl p-3.5 text-sm" placeholder="🔍 พิมพ์ชื่อรถ..." onfocus="showDropdown()" onkeyup="filterCars()" autocomplete="off" required>
                         <div id="carDropdown" class="dropdown-content"></div>
                     </div>
                     <div class="md:col-span-3">
@@ -304,421 +340,1092 @@
                     </div>
                     <div class="md:col-span-3">
                         <label class="id-label uppercase">ป้ายทะเบียน</label>
-                        <input type="text" id="carPlate" class="input-style w-full rounded-xl p-3.5 text-sm text-center font-mono" placeholder="ABC-123">
+                        <input type="text" id="carPlate" class="input-style w-full rounded-xl p-3.5 text-sm text-center font-mono" placeholder="ABC-123" required>
                     </div>
                 </div>
 
-                <!-- Section 4 -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
-                        <label class="id-label uppercase">วันที่เริ่มสัญญา</label>
-                        <input type="date" id="startDate" class="input-style w-full rounded-xl p-3.5 text-xs" onchange="calculateDates()">
+                        <label class="id-label uppercase text-gray-500">วันที่เริ่มสัญญา</label>
+                        <input type="date" id="startDate" class="input-style w-full rounded-xl p-3.5 text-xs" onchange="onStartDateChange()" required>
                     </div>
                     <div>
-                        <label class="id-label uppercase">วันที่สิ้นสุด</label>
-                        <input type="date" id="endDate" class="input-style w-full rounded-xl p-3.5 text-xs" onchange="calculateDates()">
+                        <label class="id-label uppercase text-gray-500">วันที่สิ้นสุด</label>
+                        <input type="date" id="endDate" class="input-style w-full rounded-xl p-3.5 text-xs" onchange="calculateDatesFromEndDate()" required>
                     </div>
                     <div>
-                        <label class="id-label uppercase">จำนวนวันทั้งหมด</label>
-                        <input type="number" id="days" value="0" class="input-style w-full rounded-xl p-3.5 text-center font-bold text-amber-500" oninput="calculateTotal()">
+                        <label class="id-label uppercase text-amber-500">จำนวนงวด/วัน</label>
+                        <input type="number" id="days" value="1" min="1" class="input-style w-full rounded-xl p-3.5 text-center font-bold text-amber-500" oninput="calculateEndDateFromCount()">
                     </div>
                 </div>
 
-                <!-- Section 5 -->
-                <div class="bg-gradient-to-b from-black/60 to-purple-950/20 p-8 rounded-3xl border border-white/5 relative overflow-hidden">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-center relative z-10">
-                        <div class="text-center">
-                            <label class="id-label uppercase">ราคา/วัน (฿)</label>
-                            <input type="number" id="rate" value="0" class="input-style w-full rounded-xl p-3 text-center text-lg font-semibold" oninput="calculateTotal()">
+                <div class="bg-black/60 p-6 rounded-3xl border border-white/5 space-y-6">
+                    <div class="flex items-center justify-between bg-emerald-950/40 p-4 rounded-2xl border border-emerald-500/30">
+                        <label class="flex items-center space-x-3 cursor-pointer select-none">
+                            <input type="checkbox" id="isPaidCheck" class="w-5 h-5 text-emerald-600 rounded bg-gray-900 border-gray-700 accent-emerald-500">
+                            <span class="text-sm font-bold text-emerald-300">✅ ชำระเงินเรียบร้อยแล้ว</span>
+                        </label>
+                    </div>
+
+                    <div id="autoDivideContainer" class="hidden flex items-center justify-between bg-purple-950/40 p-3.5 rounded-2xl border border-purple-500/20">
+                        <label class="flex items-center space-x-3 cursor-pointer select-none">
+                            <input type="checkbox" id="autoDivideCheck" class="w-4 h-4 text-purple-600 rounded bg-gray-900 border-gray-700" onchange="toggleAutoDivide()">
+                            <span class="text-xs font-semibold text-purple-300">⚡ คำนวณหารอัตราผ่อนจากยอดรวมเป้าหมาย</span>
+                        </label>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 items-center">
+                        <div id="installmentTypeContainer" class="hidden text-center">
+                            <label class="id-label uppercase">ระยะเวลารอบผ่อน</label>
+                            <select id="installmentType" class="input-style w-full rounded-xl p-3 text-center text-sm font-semibold cursor-pointer" onchange="onInstallmentTypeChange()">
+                                <option value="2days">ผ่อนทุกๆ 2 วัน</option>
+                                <option value="day">ผ่อนรายวัน (1 วัน)</option>
+                                <option value="week">ผ่อนรายอาทิตย์ (7 วัน)</option>
+                                <option value="month">ผ่อนรายเดือน (30 วัน)</option>
+                            </select>
+                        </div>
+                        <div class="hidden text-center" id="targetTotalBox">
+                            <label class="id-label uppercase text-pink-400">ยอดผ่อนรวมเป้าหมาย (฿)</label>
+                            <input type="number" id="targetTotal" placeholder="0" class="input-style w-full rounded-xl p-3 text-center text-lg font-semibold text-pink-300" oninput="calculateRateFromTarget()">
+                        </div>
+                        <div class="text-center" id="rateBox">
+                            <label id="labelRate" class="id-label uppercase">ราคา/วัน (฿)</label>
+                            <input type="number" id="rate" value="0" class="input-style w-full rounded-xl p-3 text-center text-lg font-semibold" oninput="updateCalculations()">
                         </div>
                         <div class="text-center">
                             <label class="id-label uppercase">มัดจำ (฿)</label>
-                            <input type="number" id="deposit" placeholder="0" class="input-style w-full rounded-xl p-3 text-center text-lg font-semibold" oninput="calculateTotal()">
+                            <input type="number" id="deposit" placeholder="0" class="input-style w-full rounded-xl p-3 text-center text-lg font-semibold" oninput="updateCalculations()">
                         </div>
                         <div class="text-center md:border-l border-white/10">
                             <label class="text-[10px] text-green-400 font-bold uppercase tracking-widest block mb-2">ยอดสุทธิ</label>
-                            <div id="totalDisplay" class="text-4xl font-bold text-white tracking-tight">0 ฿</div>
+                            <div id="totalDisplay" class="text-2xl font-bold text-white">0 ฿</div>
+                        </div>
+                    </div>
+
+                    <div id="scheduleContainer" class="hidden border-t border-purple-900/40 pt-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <h4 class="text-xs font-bold text-purple-300 uppercase">📅 ตารางผ่อนชำระงวด</h4>
+                            <span id="installmentCount" class="text-xs text-amber-400 font-semibold">0 งวด</span>
+                        </div>
+                        <div class="max-h-40 overflow-y-auto rounded-xl border border-purple-900/30 bg-black/40 p-2">
+                            <table class="w-full text-xs text-left">
+                                <thead class="text-purple-400 border-b border-purple-900/50 uppercase">
+                                    <tr>
+                                        <th class="p-1.5">งวดที่</th>
+                                        <th class="p-1.5">ช่วงวันที่</th>
+                                        <th class="p-1.5 text-right">ยอดผ่อน</th>
+                                        <th class="p-1.5 text-right">ยอดคงเหลือ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="scheduleBody" class="divide-y divide-purple-900/20 text-gray-300"></tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
 
                 <div>
-                    <label class="id-label uppercase">หมายเหตุ</label>
-                    <textarea id="rules" rows="2" class="input-style w-full rounded-xl p-4 text-sm resize-none" placeholder="ใส่ข้อความที่นี่..."></textarea>
+                    <label class="id-label uppercase">หมายเหตุ / เงื่อนไขเพิ่มเติม</label>
+                    <textarea id="rules" rows="2" class="input-style w-full rounded-xl p-4 text-sm resize-none" placeholder="ใส่เงื่อนไขสัญญาเพิ่มเติม..."></textarea>
+                </div>
+
+                <div class="flex gap-4 pt-4">
+                    <button type="button" onclick="closeFormModal()" class="w-1/2 bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold py-4 rounded-xl text-sm transition">ยกเลิก</button>
+                    <button type="submit" class="w-1/2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 rounded-xl text-sm transition shadow-lg">บันทึกสัญญาลง Google Sheets</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL ปรับเป็นสัญญาบิด -->
+    <div id="breachModal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4 z-50">
+        <div class="contract-card max-w-md w-full rounded-3xl p-6 space-y-5 border border-rose-500/30">
+            <h3 class="text-lg font-bold text-rose-400">🚫 รายละเอียดสัญญาบิด</h3>
+            <input type="hidden" id="breachContractId">
+
+            <div id="staffWarningBox" class="hidden p-3 bg-rose-950/50 border border-rose-500/30 rounded-xl text-xs text-rose-300">
+                ⚠️ เจ้าหน้าที่ไม่มีสิทธิ์กรอกข้อมูลทะเบียนใหม่และเหตุผล (สิทธิ์เฉพาะผู้ดูแลระบบเท่านั้น)
+            </div>
+
+            <div id="adminFormBox" class="space-y-4">
+                <div>
+                    <label class="id-label uppercase block mb-1 text-xs text-gray-400">ป้ายทะเบียนใหม่</label>
+                    <input type="text" id="newCarPlateInput" placeholder="กรอกทะเบียนใหม่..." class="input-style w-full rounded-xl p-3 text-sm font-mono text-center bg-gray-900 border border-gray-700 text-white">
+                </div>
+                <div>
+                    <label class="id-label uppercase block mb-1 text-xs text-gray-400">เหตุผลการบิดสัญญา</label>
+                    <textarea id="breachReasonInput" rows="3" placeholder="ระบุเหตุผล..." class="input-style w-full rounded-xl p-3 text-sm resize-none bg-gray-900 border border-gray-700 text-white"></textarea>
                 </div>
             </div>
 
-            <div class="p-8 bg-black/40 border-t border-white/5">
-                <button id="copyBtn" onclick="copyToClipboard()" class="group relative w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-5 rounded-2xl transition-all duration-300 shadow-xl overflow-hidden">
-                    <span class="relative z-10 flex items-center justify-center gap-2">คัดลอกข้อมูลสัญญา</span>
-                    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
-                </button>
+            <div class="flex gap-2 pt-2">
+                <button onclick="closeBreachModal()" class="w-1/2 bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold py-3 rounded-xl text-xs">ปิด / ยกเลิก</button>
+                <button id="btnStaffBreach" onclick="confirmStaffBreach()" class="hidden w-1/2 bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded-xl text-xs transition">ย้ายไปหมวดสัญญาบิด</button>
+                <button id="btnConfirmBreach" onclick="confirmBreach()" class="w-1/2 bg-rose-600 hover:bg-rose-500 text-white font-bold py-3 rounded-xl text-xs transition">บันทึกสัญญาบิด</button>
             </div>
         </div>
-      </div>
-
-      <!-- Car Rental Page (Replaced Percentage) -->
-      <div id="percentage" class="page">
-        <div class="card judicial-input-container" style="max-width: 500px; margin: 0 auto; overflow: hidden; padding: 0;">
-          <div style="background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); padding: 30px; text-align: center;">
-            <h1 style="color: white; font-size: 2rem; font-weight: 800; text-transform: uppercase; margin: 0; letter-spacing: -1px;">Car Rental</h1>
-            <p style="color: rgba(255,255,255,0.8); font-size: 0.85rem; margin-top: 5px; font-weight: 500;">บันทึกรายได้ปล่อยเช่ารถจูน</p>
-          </div>
-          <form id="incomeForm" style="padding: 30px;" onsubmit="handleFormSubmit(this); return false;">
-            <div style="margin-bottom: 20px;">
-              <label style="display: block; font-size: 0.85rem; color: var(--accent-soft); font-weight: 600; margin-bottom: 5px;">เลือกรุ่นรถที่เช่า</label>
-              <select name="carName" required>
-                <option value="" disabled selected>-- เลือกคันที่ปล่อยเช่า --</option>
-                <option value="Spano">Spano</option>
-                <option value="Lamborghini Revuelto">Lamborghini Revuelto</option>
-                <option value="SC18">SC18</option>
-                <option value="Urus">Urus</option>
-                <option value="SC18">SC18</option>
-              </select>
-            </div>
-            <div style="margin-bottom: 20px;">
-              <label style="display: block; font-size: 0.85rem; color: var(--accent-soft); font-weight: 600; margin-bottom: 5px;">จำนวนเงินรวม (100%)</label>
-              <input type="number" name="totalAmount" id="totalAmount_rental" step="0.01" required
-                style="font-size: 1.5rem; font-weight: bold; text-align: center; color: var(--accent-purple);"
-                placeholder="0.00" oninput="calculateSplits(this.value)">
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px;">
-              <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 15px; border: 1px solid #333; text-align: center;">
-                <label style="display: block; font-size: 10px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 5px;">ส่วนแบ่ง 40%</label>
-                <input type="number" name="percent40" id="percent40_rental" readonly
-                  style="background: transparent; border: none; font-size: 1.25rem; font-weight: bold; color: var(--accent-purple); text-align: center; padding: 0; width: 100%;" value="0.00">
-              </div>
-              <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 15px; border: 1px solid #333; text-align: center;">
-                <label style="display: block; font-size: 10px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 5px;">ส่วนแบ่ง 60%</label>
-                <input type="number" name="percent60" id="percent60_rental" readonly
-                  style="background: transparent; border: none; font-size: 1.25rem; font-weight: bold; color: var(--accent-purple); text-align: center; padding: 0; width: 100%;" value="0.00">
-              </div>
-            </div>
-            <button type="submit" class="btn" style="width: 100%; height: 55px; background: linear-gradient(145deg, #8b5cf6, #6d28d9); color: white; border: none; font-size: 1rem; margin: 0;">
-              ยืนยันการบันทึกข้อมูล
-            </button>
-          </form>
-        </div>
-      </div>
-
-      <!-- Duty Schedule -->
-      <div id="duty" class="page">
-        <div class="card judicial-input-container">
-          <h1>Duty Schedule Calculator</h1>
-          <input type="text" id="duty-id" placeholder="Discord User ID">
-          <input type="text" id="duty-user" placeholder="Username">
-          <input type="text" id="raw-time" placeholder="วางเวลาเวรที่นี่ (เช่น 18:15 - 19:34)">
-          <button class="btn" onclick="calculateDuty()">คำนวณเวลา</button>
-          <div class="result-box" id="duty-result">
-            <button class="copy-btn" onclick="copyDutyText()">Copy</button>
-            <div id="duty-output" style="white-space: pre-line;"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Data Sheets -->
-      <div id="sheets" class="page">
-        <div class="card">
-          <h1>Police Data Sheets</h1>
-          <button class="btn" style="width: 100%; margin-bottom: 25px; height: 60px; font-size: 1.2rem;" onclick="window.open('https://docs.google.com/spreadsheets/d/1DAy3L0m3AlKlYORNOifhaZsQPx74KV1JF5kJpFUeqCM/edit?gid=1230182781#gid=1230182781', '_blank')">
-            <i class="fas fa-table"></i> เปิด Google Sheets (ฐานข้อมูลหลัก)
-          </button>
-        </div>
-      </div>
-
-      <!-- Music Hub -->
-      <div id="music" class="page">
-        <div class="card">
-          <h1>Music Hub</h1>
-          <div class="search-box judicial-input-container">
-            <input type="text" id="yt-query" placeholder="ชื่อเพลง หรือ วางลิงก์ YouTube..." style="margin-top:0;">
-            <button class="btn" style="margin-top:0;" onclick="searchYoutube()"><i class="fas fa-search"></i></button>
-          </div>
-          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
-            <div id="player-container">
-               <iframe id="player" width="100%" height="380" src="https://www.youtube.com/embed/cYydxm3XPuA" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen style="border-radius: 12px; border: 1px solid var(--border-color);"></iframe>
-            </div>
-            <div>
-              <p style="color: var(--accent-purple); margin-bottom: 10px; font-weight: bold;">ประวัติการฟัง</p>
-              <div id="history-list" style="max-height: 330px; overflow-y: auto;"></div>
-              <button class="btn" style="width: 100%; background: transparent; color: #ff5555; border: 1px solid #ff5555; font-size: 12px;" onclick="clearHistory()">ล้างประวัติ</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div id="settings" class="page"><div class="card"><h1>Settings</h1><button class="btn" style="background:#ff5555;color:white;" onclick="resetSystem()">Reset System</button></div></div>
     </div>
-  </div>
 
-  <script>
-    // System Initialization
-    window.addEventListener('load', () => {
-      setTimeout(() => { 
-        document.getElementById('splash-screen').style.opacity = '0'; 
-        setTimeout(() => document.getElementById('splash-screen').style.display = 'none', 500); 
-      }, 1000); 
-      updateHistoryUI();
-      initContractPage(); // Init Contract
-    });
+    <!-- VIEW DETAILS MODAL -->
+    <div id="viewModal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4 z-50">
+        <div class="contract-card max-w-2xl w-full rounded-3xl overflow-hidden border border-purple-500/30 max-h-[90vh] overflow-y-auto p-6 md:p-8 space-y-6">
+            <div class="flex justify-between items-center border-b border-purple-900/40 pb-4">
+                <div>
+                    <h3 id="viewContractId" class="text-xl font-bold text-white tracking-wider">CR-2026-XXXX</h3>
+                    <p id="viewContractStatus" class="text-xs text-purple-400 font-semibold mt-1"></p>
+                </div>
+                <button onclick="closeViewModal()" class="text-gray-400 hover:text-white text-xl font-bold">✕</button>
+            </div>
+            <div id="viewContent" class="space-y-4 text-sm text-gray-300"></div>
+            <div class="border-t border-purple-900/40 pt-4 flex gap-2">
+                <button onclick="copyContractDetailsText()" class="w-full bg-purple-700 hover:bg-purple-600 text-white font-bold py-3 rounded-xl text-xs transition">📋 คัดลอกข้อความสัญญา</button>
+                <button onclick="closeViewModal()" class="px-6 bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold py-3 rounded-xl text-xs transition">ปิด</button>
+            </div>
+        </div>
+    </div>
 
-    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('expanded'); }
-    function showPage(pageId, element) {
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      document.getElementById(pageId).classList.add('active');
-      document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-      element.classList.add('active');
-      document.getElementById('page-title').innerText = element.querySelector('span').innerText;
-    }
+    <!-- FULLSCREEN LOADING OVERLAY -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-box">
+            <div id="loadingSpinner" class="spinner"></div>
+            <div id="successCheckmark" class="checkmark-wrapper" style="display: none;">
+                <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                    <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+                    <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                </svg>
+            </div>
+            <p id="loadingText" class="text-sm font-semibold text-purple-200 mt-4">กำลังบันทึกข้อมูล...</p>
+        </div>
+    </div>
 
-    // --- CAR RENTAL LOGIC ---
-    function calculateSplits(val) {
-      const amount = parseFloat(val) || 0;
-      document.getElementById('percent40_rental').value = (amount * 0.4).toFixed(2);
-      document.getElementById('percent60_rental').value = (amount * 0.6).toFixed(2);
-    }
+    <script>
+        // รับค่า Discord Code จาก Google Apps Script (ถ้านำทางกลับมาจาก Discord)
+        const discordCode = "<?= discordCode ?>";
 
-    function handleFormSubmit(formObject) {
-      Swal.fire({
-        title: 'กำลังส่งข้อมูล...',
-        background: '#121214',
-        color: '#bb86fc',
-        showConfirmButton: false,
-        didOpen: () => { Swal.showLoading(); }
-      });
-      const data = {
-        carName: formObject.carName.value,
-        totalAmount: formObject.totalAmount.value,
-        percent40: formObject.percent40.value,
-        percent60: formObject.percent60.value
-      };
-      setTimeout(() => {
-          Swal.fire({ icon: 'success', title: 'บันทึกสำเร็จ', text: 'บันทึกข้อมูลเรียบร้อยแล้ว', background: '#121214', color: '#bb86fc', confirmButtonColor: '#8b5cf6' });
-          formObject.reset();
-          calculateSplits(0);
-      }, 1500);
-    }
+        const DISCORD_OAUTH_URL = "https://discord.com/oauth2/authorize?client_id=1536733256379011203&response_type=code&redirect_uri=https%3A%2F%2Fscript.google.com%2Fmacros%2Fs%2FAKfycbzu3XhqAqLcYbWbKfDBDCma6SJAellUYuz3WST2AQPrS9hTu1rNd50qh7Oah5tOgwQzvg%2Fexec&scope=identify+gdm.join+email";
+        
+        const ADMIN_CREDENTIALS = { username: "mixka zan", password: "17519532486" };
+        const STAFF_ACCOUNTS = [
+            { id: "796400452144857119", pass: "zxcvbn123" },
+            { id: "EXP_99K", pass: "zxcvbn123" },
+            { id: "deklaaon098", pass: "zxcvbn123" },
+            { id: "CKCH7549", pass: "zxcvbn123" },
+            { id: "x_ai23", pass: "zxcvbn123" },
+            { id: "JUYNM843", pass: "zxcvbn123" },
+            { id: "GARREM_GARIET", pass: "zxcvbn123" }
+        ];
 
-    // --- JUDICIAL LOGIC ---
-    const selectedCases = {};
-    let fineMultiplier = 1;
-    let multiplierLabel = "ปกติ";
+        const carList = [
+            "Aston Martin Vintage", "C8", "Bugatti Divo", "Mc-Senna", "Ferrari 812", "Camero", "Fenry", 
+            "D-max", "GT3 RS", "Urus", "Lamborghini Aru", "Ford Ranger", "GTB", "AMG", "Emira", 
+            "Brawler", "MC20", "Pagani Zonda R", "Enzo", "Bugatti Mistral", "Audi R8", 
+            "Aston Martin Superleggera", "Lamborghini Aventador Ultimae Roadster", "Lotus Emira", 
+            "Zenvo ST1", "Xiaomi SY7", "Evora GTC", "Mustang GT", "Aero TT", "Sapru MK5", 
+            "Toro Feroz Venano", "Nissan R32", "Porsche 918", "Lancer Evo 9", "Type R", "Roadster", 
+            "McLaren MP4-12C", "Apollo Intensa Emozione", "MC650S", "Honda VAN", "Hamster Car", 
+            "Yaris GR", "Mercedes-Benz G500", "Kamacho", "Spano", "Lamborghini Revuelto", "Lamborghini SC18",
+            "Rimac Nevera", "Bugatti Chiron", "Lancer Evolution X", "Porsche 911", "Maser GranTurismo", "Koenigsegg Agera", "Mclaren P1GTR", "Brabham BT62", "Ferrari SF90",
+            "Frog Jeep", "Koenigsegg Gemera", "Audi R8 GT3", "Thrax", "SSC Tuatara", "Battista A", "Classic", "Lamborghini Temerario"
+        ];
+        const thaiMonths = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
 
-    function m1(area) {
-      const data = {
-        "ทะเลาะวิวาท": [10000, 10],
-        "สร้างความวุ่นวาย ทุกรูปแบบ": [5000, 5],
-        "ไล่หน้ากาก หรือปิดบังใบหน้า": [3000, 5],
-        "เจตนาทําร้ายร่างกาย - ประชาชน": [20000, 10],
-        "ลักพาตัว": [10000, 10],
-        "แสดงอาวุธในที่สาธารณะ": [5000, 0],
-        "พื้นที่สุ่มเสี่ยง": [2000, 3],
-        "หลบหนีการจับกุม": [3000, 5],
-        "ยัดเยียดสิ่งของผิดกฎหมายให้ผู้อื่น": [8000, 5],
-        "โจรกรรมยานพาหนะ": [10000, 10],
-        "ยักยอกทรัพย์": [15000, 20],
-        "ทําลายทรัพย์สินผู้อื่น": [5000, 5],
-        "โชว์ของงานดำต่อหน้าเจ้าหน้าที่": [5000, 8],
-        "ความผิดฐานบุกรุกเคหะสถาน / บุกรุกบ้าน": [50000, 15],
-        "ครอบครองปูน": [2000, 3],
-        "ครอบครองสายไฟ": [2000, 3],
-        "ไม่ใส่สูทหรือชุดที่บ่งบอกถึงสัญลักษณ์แก๊งตนเอง": [20000, 5],
-        "ถือครอง Painkiller ในตัว": [50000, 15],
-        "ครอบครอง Capsule Blue,Red,Green": [3000, 5],
-        "ครอบครอง Lockpick": [5000, 10],
-        "ไม่ให้ความร่วมมือกับเจ้าหน้าที่": [30000, 10],
-        "หมิ่นประมาทเจ้าหน้าที่": [100000, 20],
-        "พยายามขโมยรถหน่วยงาน": [120000, 20],
-        "ก่อกวนเจ้าหน้าที่": [30000, 10],
-        "ก่อเหตุบริเวณสภานที่ราชการ": [80000, 10],
-        "แอบอ้างเป็นหน่วยงานหรือแต่งกายเป็นหน่วยงาน": [80000, 10],
-        "แจ้งความเท็จ หรือให้การเท็จ": [20000, 10],
-        "ทำร้ายร่างกายเจ้าหน้าที่": [100000, 30],
-        "เจตนาทำร้ายร่างกายเจ้าหน้าที่": [20000, 10],
-      };
-      return { fine: data[area]?.[0] || 0, jailTime: data[area]?.[1] || 0 };
-    }
+        let currentRole = 'public'; 
+        let loggedInUser = '';
+        let currentTab = 'rent'; 
+        let contracts = [];
+        let generatedSchedule = [];
+        let activeViewContract = null;
 
-    function addSelectedCase() {
-      const caseName = document.getElementById("caseSelect").value;
-      if (!caseName) return;
-      selectedCases[caseName] = (selectedCases[caseName] || 0) + 1;
-      renderCaseList();
-    }
+        function initSystem() {
+            const dropdown = document.getElementById('carDropdown');
+            [...new Set(carList)].sort().forEach(car => {
+                const item = document.createElement('div');
+                item.className = 'dropdown-item';
+                item.innerText = car;
+                item.onclick = () => selectCar(car);
+                dropdown.appendChild(item);
+            });
 
-    function renderCaseList() {
-      const listDiv = document.getElementById("caseList");
-      listDiv.innerHTML = "";
-      Object.keys(selectedCases).forEach(caseName => {
-        const count = selectedCases[caseName];
-        const div = document.createElement("div");
-        div.className = "case-item";
-        div.innerHTML = `
-          <div class="case-name">${caseName} <span style="color:#a78bfa">x${count}</span></div>
-          <div class="case-buttons">
-            <button onclick="incrementCase('${caseName}')">+</button>
-            <button onclick="decrementCase('${caseName}')">-</button>
-          </div>
-        `;
-        listDiv.appendChild(div);
-      });
-    }
+            // ตรวจสอบยืนยันสิทธิ์จาก Discord หากมี Code ส่งมา
+            checkDiscordAuth();
 
-    function incrementCase(caseName) { selectedCases[caseName]++; renderCaseList(); }
-    function decrementCase(caseName) {
-      selectedCases[caseName]--;
-      if (selectedCases[caseName] <= 0) delete selectedCases[caseName];
-      renderCaseList();
-    }
-
-    function setFineMultiplier(multiplier, btn, label) {
-      fineMultiplier = multiplier;
-      multiplierLabel = label;
-      document.querySelectorAll(".control-buttons button").forEach(b => b.classList.remove("active-multiplier"));
-      btn.classList.add("active-multiplier");
-      calculateAll();
-    }
-
-    function calculateAll(isHalved = false) {
-      let totalFine = 0, totalJail = 0, redFine = 0, redCasesList = [];
-      const nonBailableCases = ["ไม่ให้ความร่วมมือกับเจ้าหน้าที่", "หมิ่นประมาทเจ้าหน้าที่", "พยายามขโมยรถหน่วยงาน", "ก่อกวนเจ้าหน้าที่", "แจ้งความเท็จ หรือให้การเท็จ", "ก่อเหตุบริเวณสภานที่ราชการ", "แอบอ้างเป็นหน่วยงานหรือแต่งกายเป็นหน่วยงาน", "ทำร้ายร่างกายเจ้าหน้าที่", "เจตนาทำร้ายร่างกายเจ้าหน้าที่"];
-      for (const caseName in selectedCases) {
-        const count = selectedCases[caseName];
-        const { fine, jailTime } = m1(caseName);
-        if (nonBailableCases.includes(caseName)) {
-          redFine += fine * count;
-          redCasesList.push({name: caseName, count: count});
-        } else {
-          totalFine += fine * fineMultiplier * count;
-          totalJail += jailTime * count;
+            fetchContractsFromSheet();
+            setInterval(fetchContractsFromSheet, 30000);
         }
-      }
-      const redInput = parseInt(document.getElementById("redMoney").value) || 0;
-      if (redInput > 0) { totalFine += redInput * 2 * fineMultiplier; totalJail += 5; }
-      let jailDisplay = totalJail;
-      if (totalJail > 30) { totalFine += (totalJail - 30) * 2000; jailDisplay = 30; }
-      if (totalFine > 300000) totalFine = 300000;
-      let totalWithBail = totalFine + (jailDisplay * 2000) + redFine;
-      if (totalWithBail > 300000) totalWithBail = 300000;
-      let summary = `<b><span style="font-size:1.1rem; border-bottom:1px solid #8b5cf6">รายการคดีความ</span></b><br>`;
-      let normalCases = Object.keys(selectedCases).map(name => `${name} x${selectedCases[name]}`).join(" , ");
-      if (redInput > 0) normalCases += (normalCases ? " , " : "") + `เงินแดง ${redInput.toLocaleString()}`;
-      summary += (normalCases || "-") + (fineMultiplier > 1 ? ` [${multiplierLabel}]` : "") + (isHalved ? ` [สมรู้ร่วมคิด]` : "") + "<br><br>";
-      let output = summary + `<b>ผลการคำนวณ:</b><br><span style="color:#fff">ค่าปรับรวม:</span> <span style="color:#a78bfa">${totalFine.toLocaleString()}</span> บาท<br><span style="color:#fff">เวลาจำคุก:</span> <span style="color:#a78bfa">${jailDisplay}</span> นาที<br><span style="color:#fff">ยอดประกันตัวสุทธิ:</span> <span style="color:#ddd6fe; font-size: 1.3rem;">${totalWithBail.toLocaleString()}</span> บาท<br>`;
-      if (redCasesList.length > 0) {
-        output += `<br><b style="color:#fb7185;">❌ คดีที่ไม่สามารถประกันได้:</b><br>`;
-        redCasesList.forEach(item => {
-          const { fine, jailTime } = m1(item.name);
-          output += `<div style="font-size:0.9rem; color:#d1d5db;">• ${item.name} x${item.count} (ปรับ ${(fine * item.count).toLocaleString()} / คุก ${jailTime * item.count} น.)</div>`;
-        });
-      }
-      if (isHalved) { output += `<br><div style="border-top:1px dashed #4b5563; padding-top:10px;"><b style="color:#a78bfa;">ค่าสมรู้ร่วมคิด (50%):</b> <span style="color:#fff; font-size:1.2rem;">${(Math.floor(totalWithBail / 2)).toLocaleString()}</span> บาท</div>`; }
-      document.getElementById("output").innerHTML = output;
-    }
 
-    // --- DUTY LOGIC ---
-    function calculateDuty() {
-      const id = document.getElementById('duty-id').value || "0";
-      const user = document.getElementById('duty-user').value || "Admin";
-      const raw = document.getElementById('raw-time').value;
-      const match = raw.match(/(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/);
-      if (!match) return alert("รูปแบบเวลาผิด!");
-      const [h1, m1] = match[1].split(':').map(Number);
-      const [h2, m2] = match[2].split(':').map(Number);
-      let diff = (h2 * 60 + m2) - (h1 * 60 + m1);
-      if (diff < 0) diff += 1440;
-      const out = `ชื่อ : <@${id}>\nUsername : (${user})\nเวลา : ${match[1]} - ${match[2]}\nรวมเวลา : ${Math.floor(diff/60)} h ${diff%60} m`;
-      document.getElementById('duty-output').innerText = out;
-      document.getElementById('duty-result').style.display = 'block';
-    }
-    function copyDutyText() { navigator.clipboard.writeText(document.getElementById('duty-output').innerText); alert("คัดลอกแล้ว!"); }
-
-    // --- MUSIC HUB LOGIC ---
-    function play(id, title) { document.getElementById('player').src = "https://www.youtube.com/embed/" + id + "?autoplay=1"; saveToHistory(id, title); }
-    function searchYoutube() {
-      const query = document.getElementById('yt-query').value;
-      if (!query) return;
-      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-      const match = query.match(regExp);
-      if (match && match[2].length == 11) { play(match[2], "เพลงจากลิงก์"); } 
-      else { window.open("https://www.youtube.com/results?search_query=" + encodeURIComponent(query), '_blank'); saveToHistory("", "ค้นหา: " + query); }
-      document.getElementById('yt-query').value = "";
-    }
-    function saveToHistory(id, title) {
-      let history = JSON.parse(localStorage.getItem('nexus_history')) || [];
-      history = history.filter(item => item.title !== title);
-      history.unshift({ id, title, time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) });
-      if (history.length > 10) history.pop();
-      localStorage.setItem('nexus_history', JSON.stringify(history));
-      updateHistoryUI();
-    }
-    function updateHistoryUI() {
-      const list = document.getElementById('history-list');
-      const history = JSON.parse(localStorage.getItem('nexus_history')) || [];
-      if (history.length === 0) { list.innerHTML = '<p style="color:#555; font-size:12px; text-align:center;">ไม่มีประวัติ</p>'; return; }
-      list.innerHTML = history.map(song => `<div class="song-item" onclick="song.id ? play('${song.id}', '${song.title}') : null"><i class="fas ${song.id ? 'fa-play-circle' : 'fa-search'}"></i><div style="overflow: hidden;"><div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 13px;">${song.title}</div><small style="font-size: 10px; color: #555;">${song.time}</small></div></div>`).join('');
-    }
-    function clearHistory() { localStorage.removeItem('nexus_history'); updateHistoryUI(); }
-    function resetSystem() { localStorage.clear(); location.reload(); }
-    setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
-
-    // --- CONTRACT LOGIC (IMPORTED) ---
-    const carList = ["Aston Martin Vintage", "C8", "Bugatti Divo", "Mc-Senna", "Ferrari 812", "Camero", "Fenry", "D-max", "GT3 RS", "Urus", "Lamborghini Aru", "Ford Ranger", "GTB", "AMG", "Emira", "Brawler", "MC20", "Pagani Zonda R", "Enzo", "Bugatti Mistral", "Audi R8", "Aston Martin Superleggera", "Lamborghini Aventador Ultimae Roadster", "Lotus Emira", "Zenvo ST1", "Xiaomi SY7", "Evora GTC", "Mustang GT", "Aero TT", "Sapru MK5", "Toro Feroz Venano", "Nissan R32", "Porsche 918", "Lancer Evo 9", "Type R", "Roadster", "McLaren MP4-12C", "Apollo Intensa Emozione", "MC650S", "Honda VAN", "Hamster Car", "Yaris GR", "Mercedes-Benz G500", "Kamacho", "Spano", "Lamborghini Revuelto", "Lamborghini SC18", "Rimac Nevera", "Bugatti Chiron", "Lancer Evolution X", "Porsche 911", "Maser GranTurismo", "Koenigsegg Agera", "Mclaren P1GTR", "Brabham BT62", "Ferrari SF90", "Frog Jeep", "Koenigsegg Gemera", "Audi R8 GT3", "Thrax", "SSC Tuatara"];
-    function initContractPage() {
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('startDate').value = today;
-        const dropdown = document.getElementById('carDropdown');
-        dropdown.innerHTML = "";
-        [...new Set(carList)].sort().forEach(car => {
-            const item = document.createElement('div');
-            item.className = 'dropdown-item';
-            item.innerText = car;
-            item.onclick = () => selectCar(car);
-            dropdown.appendChild(item);
-        });
-        const savedStaff = localStorage.getItem('staffID');
-        if(savedStaff) document.getElementById('staffID').value = savedStaff;
-        document.getElementById('staffID').addEventListener('input', (e) => { localStorage.setItem('staffID', e.target.value); });
-    }
-    function showDropdown() { document.getElementById('carDropdown').classList.add('show'); }
-    function filterCars() {
-        const input = document.getElementById('carInput').value.toUpperCase();
-        const items = document.getElementsByClassName('dropdown-item');
-        for (let i = 0; i < items.length; i++) { items[i].style.display = items[i].innerText.toUpperCase().includes(input) ? "" : "none"; }
-    }
-    function selectCar(name) { document.getElementById('carInput').value = name; document.getElementById('carDropdown').classList.remove('show'); }
-    function closeAllDropdowns(e) { if (e.target && !e.target.closest('.relative')) { const dd = document.getElementById('carDropdown'); if(dd) dd.classList.remove('show'); } }
-    function calculateDates() {
-        const start = document.getElementById('startDate').value;
-        const end = document.getElementById('endDate').value;
-        if (start && end) {
-            const diffDays = Math.ceil((new Date(end) - new Date(start)) / (1000 * 60 * 60 * 24));
-            document.getElementById('days').value = diffDays >= 0 ? diffDays : 0;
-            calculateTotal();
+        // 📌 ฟังก์ชันตรวจสอบสิทธิ์หลัง redirect จาก Discord
+        function checkDiscordAuth() {
+            if (discordCode && typeof google !== 'undefined' && google.script && google.script.run) {
+                showLoadingOverlay();
+                document.getElementById('loadingText').innerText = 'กำลังตรวจสอบสิทธิ์ Discord...';
+                
+                // ตรวจสอบ Discord Code / User ID กับ Google Sheet
+                google.script.run
+                    .withSuccessHandler(function(res) {
+                        hideLoadingOverlay();
+                        if (res && res.role && res.role !== 'none') {
+                            loggedInUser = res.username || "Discord User";
+                            switchRole(res.role);
+                            alert(`เข้าสู่ระบบสำเร็จในฐานะ: ${res.role.toUpperCase()}`);
+                        } else {
+                            alert("ไม่พบบัญชี Discord นี้ในฐานข้อมูลระบบ Roles หรือไม่มีสิทธิ์เข้าถึง");
+                            switchRole('public');
+                        }
+                    })
+                    .withFailureHandler(function(err) {
+                        hideLoadingOverlay();
+                        console.error("Discord Auth Error: ", err);
+                        switchRole('public');
+                    })
+                    .checkUserRole(discordCode);
+            }
         }
-    }
-    function calculateTotal() {
-        const d = Number(document.getElementById('days').value) || 0;
-        const r = Number(document.getElementById('rate').value) || 0;
-        const dep = Number(document.getElementById('deposit').value) || 0;
-        document.getElementById('totalDisplay').innerText = ((d * r) + dep).toLocaleString() + " ฿";
-    }
-    function formatThaiDate(dateString) { if (!dateString) return "--/--/--"; const parts = dateString.split('-'); return `${parts[2]}/${parts[1]}/${(parseInt(parts[0]) + 543).toString().slice(-2)}`; }
-    function formatID(id) { id = id.trim(); if (!id) return "<@____>"; return id.startsWith('<@') ? id : `<@${id}>`; }
-    function copyToClipboard() {
-        const val = (id) => document.getElementById(id).value;
-        const d = Number(val('days')) || 0;
-        const r = Number(val('rate')) || 0;
-        const dep = Number(val('deposit')) || 0;
-        const sum = (d * r) + dep;
-        const text = `**====== สัญญาการ${val('status')}รถ  ======**\n\n` + `**สถานะ :** ( ${val('status')} )\n` + `**เจ้าหน้าที่ผู้ดูแล :** ${formatID(val('staffID'))}\n` + `---\n` + `**ข้อมูลผู้ปล่อยเช่า :**\n` + `* **ชื่อ :** ${formatID(val('ownerID'))}\n` + `* **Username :** ${val('ownerUser')}\n` + `**ข้อมูลผู้เช่า (Lessee) :**\n` + `* **ชื่อ :** ${formatID(val('lesseeID'))}\n` + `* **Username :** ${val('lesseeUser')}\n` + `---\n` + `**รายละเอียดรถ:**\n` + `* **ประเภทรถ :** ${val('carInput')} (${val('tuneStatus')})\n` + `* **ป้ายทะเบียน :** ${val('carPlate')}\n` + `---\n` + `**รายละเอียดการเช่า :**\n` + `* **วันที่เริ่มเช่า :** ${formatThaiDate(val('startDate'))}\n` + `* **วันที่คืนรถ :** ${formatThaiDate(val('endDate'))}\n` + `* **จำนวนวัน :** ${d} วัน\n` + `---\n` + `**ค่าใช้จ่าย :**\n` + `* **อัตราค่าเช่า/ผ่อน :** ${r.toLocaleString()} ฿\n` + `* **ค่ามัดจำ :** ${dep.toLocaleString()} ฿\n` + `* **ยอดสุทธิที่ต้องชำระ :** ${sum.toLocaleString()} ฿\n` + `---\n` + `**เงื่อนไขเพิ่มเติม :** ${val('rules') || '-'}\n` + `**========================**`;
-        navigator.clipboard.writeText(text).then(() => {
-            const btn = document.getElementById('copyBtn');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = "✅ คัดลอกเรียบร้อยแล้ว!";
-            setTimeout(() => { btn.innerHTML = originalText; }, 2000);
-        });
-    }
-  </script>
+
+        function loginWithDiscord() {
+            window.location.href = DISCORD_OAUTH_URL;
+        }
+
+        function openRoleModal() {
+            if (currentRole !== 'admin') {
+                alert("เฉพาะผู้ดูแลระบบ (Admin) เท่านั้นที่จัดการสิทธิ์ได้");
+                return;
+            }
+            document.getElementById('roleManagerModal').classList.remove('hidden');
+        }
+
+        function closeRoleModal() {
+            document.getElementById('roleManagerModal').classList.add('hidden');
+        }
+
+        function handleSaveRole(e) {
+            e.preventDefault();
+            const targetId = document.getElementById('targetDiscordId').value.trim();
+            const newRole = document.getElementById('selectedRole').value;
+
+            showLoadingOverlay();
+
+            if (typeof google !== 'undefined' && google.script && google.script.run) {
+                google.script.run
+                    .withSuccessHandler(function(res) {
+                        showSuccessState(function() {
+                            closeRoleModal();
+                            alert(res.message || "บันทึกสิทธิ์สำเร็จ");
+                        });
+                    })
+                    .withFailureHandler(function(err) {
+                        hideLoadingOverlay();
+                        alert("เกิดข้อผิดพลาด: " + err.message);
+                    })
+                    .updateUserRole(targetId, newRole);
+            }
+        }
+
+        function openLoginModal(role) {
+            document.getElementById('loginRoleType').value = role;
+            document.getElementById('loginModalTitle').innerText = role === 'admin' ? 'ล็อกอินผู้ดูแลระบบ (Admin)' : 'ล็อกอินเจ้าหน้าที่ (Staff)';
+            document.getElementById('loginModalSub').innerText = role === 'admin' ? 'สำหรับผู้ดูแลระบบเท่านั้น' : 'เฉพาะรายชื่อเจ้าหน้าที่ที่มีสิทธิ์ในระบบ';
+            document.getElementById('loginUsername').value = '';
+            document.getElementById('loginPassword').value = '';
+            document.getElementById('loginErrorMessage').classList.add('hidden');
+            document.getElementById('loginModal').classList.remove('hidden');
+        }
+
+        function closeLoginModal() {
+            document.getElementById('loginModal').classList.add('hidden');
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const targetRole = document.getElementById('loginRoleType').value;
+            const user = document.getElementById('loginUsername').value.trim();
+            const pass = document.getElementById('loginPassword').value.trim();
+            const errBox = document.getElementById('loginErrorMessage');
+
+            if (targetRole === 'admin') {
+                if (user === ADMIN_CREDENTIALS.username && pass === ADMIN_CREDENTIALS.password) {
+                    loggedInUser = user;
+                    closeLoginModal();
+                    switchRole('admin');
+                } else {
+                    errBox.classList.remove('hidden');
+                }
+            } else if (targetRole === 'staff') {
+                const found = STAFF_ACCOUNTS.find(s => s.id === user && s.pass === pass);
+                if (found) {
+                    loggedInUser = user;
+                    closeLoginModal();
+                    switchRole('staff');
+                } else {
+                    errBox.classList.remove('hidden');
+                }
+            }
+        }
+
+        function logout() {
+            loggedInUser = '';
+            switchRole('public');
+        }
+
+        function fetchContractsFromSheet() {
+            if (typeof google !== 'undefined' && google.script && google.script.run) {
+                google.script.run
+                    .withSuccessHandler(function(data) {
+                        contracts = data || [];
+                        renderTable();
+                    })
+                    .withFailureHandler(function(err) {
+                        console.error("ไม่สามารถดึงข้อมูลจาก Google Sheets ได้: ", err);
+                    })
+                    .getContractsFromSheet();
+            }
+        }
+
+        function switchRole(role) {
+            currentRole = role;
+            const badge = document.getElementById('currentRoleBadge');
+            const btnAdmin = document.getElementById('btnRoleAdmin');
+            const btnStaff = document.getElementById('btnRoleStaff');
+            const btnPublic = document.getElementById('btnRolePublic');
+            const btnLogout = document.getElementById('btnLogout');
+            const btnManage = document.getElementById('btnManageRoles');
+            const userDisplay = document.getElementById('loggedInUserDisplay');
+
+            const staffSec = document.getElementById('staffSection');
+            const publicSec = document.getElementById('publicSection');
+
+            btnAdmin.className = "px-4 py-2 text-xs font-bold rounded-xl bg-gray-800 text-gray-400 hover:bg-gray-700 transition-all";
+            btnStaff.className = "px-4 py-2 text-xs font-bold rounded-xl bg-gray-800 text-gray-400 hover:bg-gray-700 transition-all";
+            btnPublic.className = "px-4 py-2 text-xs font-bold rounded-xl bg-gray-800 text-gray-400 hover:bg-gray-700 transition-all";
+
+            if (role === 'admin') {
+                badge.innerText = "ผู้ดูแลระบบ (Admin)";
+                badge.className = "bg-purple-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider";
+                btnAdmin.className = "px-4 py-2 text-xs font-bold rounded-xl bg-purple-600 text-white transition-all shadow-lg";
+                btnLogout.classList.remove('hidden');
+                btnManage.classList.remove('hidden');
+                userDisplay.classList.remove('hidden');
+                userDisplay.innerText = `👤 ${loggedInUser}`;
+                staffSec.classList.remove('hidden');
+                publicSec.classList.add('hidden');
+            } else if (role === 'staff') {
+                badge.innerText = "เจ้าหน้าที่ (Staff)";
+                badge.className = "bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider";
+                btnStaff.className = "px-4 py-2 text-xs font-bold rounded-xl bg-blue-600 text-white transition-all shadow-lg";
+                btnLogout.classList.remove('hidden');
+                btnManage.classList.add('hidden');
+                userDisplay.classList.remove('hidden');
+                userDisplay.innerText = `👤 ${loggedInUser}`;
+                staffSec.classList.remove('hidden');
+                publicSec.classList.add('hidden');
+            } else {
+                badge.innerText = "ประชาชน (Public View)";
+                badge.className = "bg-amber-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider";
+                btnPublic.className = "px-4 py-2 text-xs font-bold rounded-xl bg-purple-600 text-white transition-all shadow-lg";
+                btnLogout.classList.add('hidden');
+                btnManage.classList.add('hidden');
+                userDisplay.classList.add('hidden');
+                publicSec.classList.remove('hidden');
+                staffSec.classList.add('hidden');
+            }
+            renderTable();
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.getElementById('tabRent').className = tab === 'rent' ? 'px-5 py-2.5 rounded-xl text-xs font-bold bg-purple-600 text-white transition-all' : 'px-5 py-2.5 rounded-xl text-xs font-bold bg-gray-800 text-gray-400 hover:bg-gray-700 transition-all';
+            document.getElementById('tabInstallment').className = tab === 'installment' ? 'px-5 py-2.5 rounded-xl text-xs font-bold bg-purple-600 text-white transition-all' : 'px-5 py-2.5 rounded-xl text-xs font-bold bg-gray-800 text-gray-400 hover:bg-gray-700 transition-all';
+            document.getElementById('tabBreached').className = tab === 'breached' ? 'px-5 py-2.5 rounded-xl text-xs font-bold bg-purple-600 text-white transition-all' : 'px-5 py-2.5 rounded-xl text-xs font-bold bg-gray-800 text-gray-400 hover:bg-gray-700 transition-all';
+            document.getElementById('tabExpired').className = tab === 'expired' ? 'px-5 py-2.5 rounded-xl text-xs font-bold bg-purple-600 text-white transition-all' : 'px-5 py-2.5 rounded-xl text-xs font-bold bg-gray-800 text-gray-400 hover:bg-gray-700 transition-all';
+            
+            const thExtraPlate = document.getElementById('thExtraPlate');
+            const thExtraReason = document.getElementById('thExtraReason');
+            if (tab === 'breached') {
+                thExtraPlate.classList.remove('hidden');
+                thExtraReason.classList.remove('hidden');
+            } else {
+                thExtraPlate.classList.add('hidden');
+                thExtraReason.classList.add('hidden');
+            }
+
+            renderTable();
+        }
+
+        function isContractExpired(endDateStr) {
+            if (!endDateStr) return false;
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            let endDate = new Date(endDateStr);
+            if (isNaN(endDate.getTime())) {
+                const parts = endDateStr.split(/[\/\-.]/);
+                if (parts.length === 3) {
+                    let day = parseInt(parts[0], 10);
+                    let month = parseInt(parts[1], 10) - 1;
+                    let year = parseInt(parts[2], 10);
+                    if (year > 2500) year -= 543;
+                    endDate = new Date(year, month, day);
+                }
+            }
+
+            if (isNaN(endDate.getTime())) return false;
+            endDate.setHours(0, 0, 0, 0);
+            return endDate < today;
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('contractTableBody');
+            tbody.innerHTML = '';
+
+            const filtered = contracts.filter(c => {
+                const expired = isContractExpired(c.endDate);
+                const isBreached = c.isBreached || c.contractState === 'Breached';
+                
+                if (currentTab === 'breached') return isBreached;
+                if (currentTab === 'expired') return !isBreached && (c.contractState === 'Expired' || expired);
+                if (currentTab === 'rent') return c.status === 'เช่า' && !isBreached && !expired;
+                if (currentTab === 'installment') return c.status === 'ผ่อน' && !isBreached && !expired;
+                return false;
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="11" class="p-8 text-center text-gray-500">ไม่พบรายการสัญญาในหมวดหมู่นี้</td></tr>`;
+                return;
+            }
+
+            filtered.forEach((c) => {
+                const realIndex = contracts.indexOf(c);
+                const expired = isContractExpired(c.endDate);
+                const isBreached = c.isBreached || c.contractState === 'Breached';
+                
+                let stateBadge = `<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-full text-[10px] font-bold">ปกติ</span>`;
+                if (isBreached) {
+                    stateBadge = `<span class="bg-rose-500/10 text-rose-400 border border-rose-500/20 px-2.5 py-1 rounded-full text-[10px] font-bold">บิดสัญญา</span>`;
+                } else if (c.contractState === 'Expired' || expired) {
+                    stateBadge = `<span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2.5 py-1 rounded-full text-[10px] font-bold">หมดสัญญา</span>`;
+                }
+
+                const paidBadge = c.isPaid 
+                    ? `<span class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2.5 py-1 rounded-full text-[10px] font-bold">🟢 ชำระแล้ว</span>`
+                    : `<span class="bg-rose-500/20 text-rose-300 border border-rose-500/40 px-2.5 py-1 rounded-full text-[10px] font-bold">🔴 ยังไม่ชำระ</span>`;
+
+                const plateDisplay = c.newCarPlate 
+                    ? `<span class="text-pink-400 font-mono font-bold">${c.newCarPlate}</span>` 
+                    : `<span class="text-amber-400 font-bold">❗ ยังไม่ได้กรอก</span>`;
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-purple-900/10 transition";
+                tr.innerHTML = `
+                    <td class="p-4 font-mono font-bold text-purple-300">${c.contractId}</td>
+                    <td class="p-4"><span class="px-2 py-0.5 rounded text-[10px] ${c.status === 'ผ่อน' ? 'bg-pink-950 text-pink-300 border border-pink-500/30' : 'bg-indigo-950 text-indigo-300 border border-indigo-500/30'}">${c.status}</span></td>
+                    <td class="p-4">${c.lesseeUser} <br><span class="text-[10px] text-gray-500">ID: ${c.lesseeID}</span></td>
+                    <td class="p-4">${c.carInput} <br><span class="text-[10px] text-purple-400 font-mono">${c.carPlate}</span></td>
+                    ${currentTab === 'breached' ? `<td class="p-4 font-mono font-bold">${plateDisplay}</td>` : ''}
+                    ${currentTab === 'breached' ? `<td class="p-4 text-xs text-gray-400 max-w-xs truncate">${c.breachReason || c.rules || 'ยังไม่มีรายละเอียด'}</td>` : ''}
+                    <td class="p-4 font-mono text-gray-400">${c.endDate}</td>
+                    <td class="p-4 text-right font-bold text-white">${Number(c.total).toLocaleString()} ฿</td>
+                    <td class="p-4 text-center">${paidBadge}</td>
+                    <td class="p-4 text-center">${stateBadge}</td>
+                    <td class="p-4 text-center">
+                        <div class="flex justify-center gap-1">
+                            <button onclick="viewContract(${realIndex})" class="bg-purple-900/50 hover:bg-purple-800 text-purple-200 px-2.5 py-1 rounded-lg text-[10px]">ดู</button>
+                            ${!isBreached ? `
+                                <button onclick="editContract(${realIndex})" class="bg-indigo-900/50 hover:bg-indigo-800 text-indigo-200 px-2.5 py-1 rounded-lg text-[10px]">แก้ไข</button>
+                                <button onclick="openBreachModal('${c.contractId}')" class="bg-rose-900/50 hover:bg-rose-800 text-rose-200 px-2.5 py-1 rounded-lg text-[10px]">บิดสัญญา</button>
+                            ` : `
+                                <button onclick="openBreachModal('${c.contractId}')" class="bg-amber-900/50 hover:bg-amber-800 text-amber-200 px-2.5 py-1 rounded-lg text-[10px]">${currentRole === 'admin' ? '✏️ กรอก/แก้ไข' : '👁️ รายละเอียด'}</button>
+                            `}
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function openBreachModal(contractId) {
+            const contract = contracts.find(c => String(c.contractId) === String(contractId));
+            document.getElementById('breachContractId').value = contractId;
+            document.getElementById('newCarPlateInput').value = contract ? (contract.newCarPlate || '') : '';
+            document.getElementById('breachReasonInput').value = contract ? (contract.breachReason || contract.rules || '') : '';
+
+            const warningBox = document.getElementById('staffWarningBox');
+            const formBox = document.getElementById('adminFormBox');
+            const btnConfirm = document.getElementById('btnConfirmBreach');
+            const btnStaff = document.getElementById('btnStaffBreach');
+
+            const isBreached = contract && (contract.isBreached || contract.contractState === 'Breached');
+
+            if (currentRole !== 'admin') {
+                warningBox.classList.remove('hidden');
+                formBox.classList.add('hidden');
+                btnConfirm.classList.add('hidden');
+                btnStaff.classList.toggle('hidden', isBreached);
+            } else {
+                warningBox.classList.add('hidden');
+                formBox.classList.remove('hidden');
+                btnConfirm.classList.remove('hidden');
+                btnStaff.classList.add('hidden');
+            }
+
+            document.getElementById('breachModal').classList.remove('hidden');
+        }
+
+        function closeBreachModal() {
+            document.getElementById('breachModal').classList.add('hidden');
+        }
+
+        function confirmStaffBreach() {
+            const contractId = document.getElementById('breachContractId').value;
+            if (!confirm("คุณต้องการย้ายสัญญานี้ไปหมวดหมู่สัญญาบิดเพื่อรอผู้ดูแลกรอกข้อมูลใช่หรือไม่?")) return;
+
+            showLoadingOverlay();
+
+            if (typeof google !== 'undefined' && google.script && google.script.run) {
+                google.script.run
+                    .withSuccessHandler(function(updatedContracts) {
+                        showSuccessState(function() {
+                            if (Array.isArray(updatedContracts)) contracts = updatedContracts;
+                            closeBreachModal();
+                            switchTab('breached');
+                        });
+                    })
+                    .withFailureHandler(function(err) {
+                        hideLoadingOverlay();
+                        alert("เกิดข้อผิดพลาดในการบันทึก: " + err.message);
+                    })
+                    .processBreachedContract(contractId, "", "รอผู้ดูแลระบบกรอกรายละเอียด");
+            }
+        }
+
+        function confirmBreach() {
+            if (currentRole !== 'admin') {
+                alert("เฉพาะผู้ดูแลระบบเท่านั้นที่สามารถกรอกข้อมูลส่วนนี้ได้!");
+                return;
+            }
+
+            const contractId = document.getElementById('breachContractId').value;
+            const newPlate = document.getElementById('newCarPlateInput').value.trim();
+            const reason = document.getElementById('breachReasonInput').value.trim();
+
+            if (!newPlate || !reason) {
+                alert("กรุณากรอกทั้งป้ายทะเบียนใหม่และเหตุผลการบิดสัญญาให้ครบถ้วน!");
+                return;
+            }
+
+            showLoadingOverlay();
+
+            if (typeof google !== 'undefined' && google.script && google.script.run) {
+                google.script.run
+                    .withSuccessHandler(function(updatedContracts) {
+                        showSuccessState(function() {
+                            if (Array.isArray(updatedContracts)) contracts = updatedContracts;
+                            closeBreachModal();
+                            switchTab('breached');
+                        });
+                    })
+                    .withFailureHandler(function(err) {
+                        hideLoadingOverlay();
+                        alert("เกิดข้อผิดพลาดในการบันทึก: " + err.message);
+                    })
+                    .processBreachedContract(contractId, newPlate, reason);
+            }
+        }
+
+        function viewContract(index) {
+            const c = contracts[index];
+            activeViewContract = c;
+
+            const isBreached = c.isBreached || c.contractState === 'Breached';
+
+            document.getElementById('viewContractId').innerText = c.contractId;
+            document.getElementById('viewContractStatus').innerText = `ประเภท: สัญญา${c.status} | สถานะ: ${isBreached ? 'สัญญาบิด' : (isContractExpired(c.endDate) ? 'หมดสัญญา' : 'ปกติ')}`;
+
+            let html = `
+                <div class="grid grid-cols-2 gap-4 bg-purple-950/20 p-4 rounded-xl border border-purple-500/10">
+                    <div><span class="text-xs text-gray-500 block">ผู้เช่า/ผ่อน:</span> <b class="text-white">${c.lesseeUser}</b> (${c.lesseeID})</div>
+                    <div><span class="text-xs text-gray-500 block">ผู้ปล่อย:</span> <b class="text-white">${c.ownerUser}</b> (${c.ownerID})</div>
+                    <div><span class="text-xs text-gray-500 block">รถยนต์:</span> <b class="text-white">${c.carInput}</b> (${c.tuneStatus})</div>
+                    <div><span class="text-xs text-gray-500 block">ทะเบียนเดิม:</span> <b class="text-purple-300 font-mono">${c.carPlate}</b></div>
+                    ${c.newCarPlate ? `<div class="col-span-2 text-pink-400 font-mono"><span class="text-xs text-gray-500 block">ทะเบียนใหม่ (หลังบิดสัญญา):</span> <b>${c.newCarPlate}</b></div>` : ''}
+                    ${(c.breachReason || (isBreached && c.rules)) ? `<div class="col-span-2 text-amber-300"><span class="text-xs text-gray-500 block">เหตุผลการบิดสัญญา:</span> <b>${c.breachReason || c.rules}</b></div>` : ''}
+                </div>
+
+                <div class="grid grid-cols-3 gap-2 text-center bg-black/40 p-3 rounded-xl border border-white/5">
+                    <div><span class="text-[10px] text-gray-500 block">วันเริ่มสัญญา</span><b>${c.startDate}</b></div>
+                    <div><span class="text-[10px] text-gray-500 block">วันสิ้นสุด</span><b>${c.endDate}</b></div>
+                    <div><span class="text-[10px] text-amber-500 block">จำนวนงวด/วัน</span><b class="text-amber-400">${c.days}</b></div>
+                </div>
+
+                <div class="bg-black/60 p-4 rounded-xl space-y-2 border border-white/5">
+                    <div class="flex justify-between text-xs"><span>การชำระเงิน:</span><b class="${c.isPaid ? 'text-emerald-400' : 'text-rose-400'}">${c.isPaid ? '🟢 ชำระเงินเรียบร้อยแล้ว' : '🔴 ยังไม่ชำระเงิน'}</b></div>
+                    <div class="flex justify-between text-xs"><span>อัตรา/วัน/งวด:</span><span>${Number(c.rate).toLocaleString()} ฿</span></div>
+                    <div class="flex justify-between text-xs"><span>มัดจำ:</span><span>${Number(c.deposit).toLocaleString()} ฿</span></div>
+                    <div class="flex justify-between font-bold text-emerald-400 text-sm pt-2 border-t border-gray-800"><span>ยอดรวมสุทธิ:</span><span>${Number(c.total).toLocaleString()} ฿</span></div>
+                </div>
+            `;
+
+            if (c.schedules && c.schedules.length > 0) {
+                html += `
+                    <div>
+                        <h4 class="text-xs font-bold text-purple-300 mb-2">📅 ตารางการผ่อนชำระ</h4>
+                        <div class="max-h-40 overflow-y-auto rounded-xl border border-purple-900/30 bg-black/40 p-2">
+                            <table class="w-full text-[11px] text-left">
+                                <thead class="text-purple-400 border-b border-purple-900/50">
+                                    <tr><th class="p-1">งวด</th><th class="p-1">ช่วงเวลา</th><th class="p-1 text-right">ยอดผ่อน</th><th class="p-1 text-right">คงเหลือ</th></tr>
+                                </thead>
+                                <tbody class="divide-y divide-purple-900/20 text-gray-300">
+                                    ${c.schedules.map(s => `
+                                        <tr>
+                                            <td class="p-1">${s.index}</td>
+                                            <td class="p-1">${s.dateRange}</td>
+                                            <td class="p-1 text-right text-emerald-400">${Number(s.pay).toLocaleString()}</td>
+                                            <td class="p-1 text-right text-gray-400">${Number(s.balance).toLocaleString()}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (c.rules && !isBreached) {
+                html += `<div class="text-xs bg-purple-950/30 p-3 rounded-xl border border-purple-500/10"><b class="text-purple-400">หมายเหตุ:</b> ${c.rules}</div>`;
+            }
+
+            document.getElementById('viewContent').innerHTML = html;
+            document.getElementById('viewModal').classList.remove('hidden');
+        }
+
+        function closeViewModal() {
+            document.getElementById('viewModal').classList.add('hidden');
+        }
+
+        function searchContract() {
+            const query = document.getElementById('searchContractInput').value.trim().toLowerCase();
+            const resultsDiv = document.getElementById('searchResults');
+            resultsDiv.innerHTML = '';
+
+            if (!query) {
+                resultsDiv.innerHTML = `<p class="text-center text-sm text-gray-500">กรุณากรอกเลขสัญญา หรือ Username</p>`;
+                return;
+            }
+
+            const found = contracts.filter(c => 
+                (c.contractId && String(c.contractId).toLowerCase().includes(query)) || 
+                (c.lesseeUser && c.lesseeUser.toLowerCase().includes(query)) || 
+                (c.lesseeID && String(c.lesseeID).toLowerCase().includes(query))
+            );
+
+            if (found.length === 0) {
+                resultsDiv.innerHTML = `<p class="text-center text-sm text-pink-400">❌ ไม่พบสัญญาที่ตรงกับข้อมูลของคุณ</p>`;
+                return;
+            }
+
+            found.forEach(c => {
+                const index = contracts.indexOf(c);
+                const div = document.createElement('div');
+                div.className = "bg-black/60 border border-purple-500/20 p-5 rounded-2xl flex justify-between items-center";
+                div.innerHTML = `
+                    <div>
+                        <span class="text-xs text-purple-400 font-mono font-bold">${c.contractId}</span>
+                        <h4 class="text-sm font-bold text-white mt-1">รถ: ${c.carInput} (${c.carPlate})</h4>
+                        <p class="text-xs text-gray-400 mt-1">สถานะชำระ: <b class="${c.isPaid ? 'text-emerald-400' : 'text-rose-400'}">${c.isPaid ? 'ชำระเงินแล้ว' : 'ยังไม่ชำระเงิน'}</b> | ยอดสุทธิ: <b class="text-emerald-400">${Number(c.total).toLocaleString()} ฿</b></p>
+                    </div>
+                    <button onclick="viewContract(${index})" class="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition">กดดูสัญญา</button>
+                `;
+                resultsDiv.appendChild(div);
+            });
+        }
+
+        function openFormModal() {
+            document.getElementById('editIndex').value = "-1";
+            document.getElementById('modalTitle').innerText = "สร้างสัญญาใหม่";
+            document.getElementById('contractForm').reset();
+            document.getElementById('isPaidCheck').checked = false;
+            
+            if (currentRole === 'staff' && loggedInUser) {
+                document.getElementById('staffID').value = loggedInUser;
+            }
+
+            initFormDefault();
+            document.getElementById('formModal').classList.remove('hidden');
+        }
+
+        function closeFormModal() {
+            document.getElementById('formModal').classList.add('hidden');
+        }
+
+        function editContract(index) {
+            const c = contracts[index];
+            document.getElementById('editIndex').value = index;
+            document.getElementById('modalTitle').innerText = `แก้ไขสัญญา (${c.contractId})`;
+
+            document.getElementById('status').value = c.status;
+            document.getElementById('staffID').value = c.staffID;
+            document.getElementById('ownerID').value = c.ownerID;
+            document.getElementById('ownerUser').value = c.ownerUser;
+            document.getElementById('lesseeID').value = c.lesseeID;
+            document.getElementById('lesseeUser').value = c.lesseeUser;
+            document.getElementById('carInput').value = c.carInput;
+            document.getElementById('tuneStatus').value = c.tuneStatus;
+            document.getElementById('carPlate').value = c.carPlate;
+            document.getElementById('startDate').value = c.startDate;
+            document.getElementById('endDate').value = c.endDate;
+            document.getElementById('days').value = c.days;
+            document.getElementById('rate').value = c.rate;
+            document.getElementById('deposit').value = c.deposit;
+            document.getElementById('rules').value = c.rules;
+            document.getElementById('isPaidCheck').checked = !!c.isPaid;
+
+            toggleMode();
+            document.getElementById('formModal').classList.remove('hidden');
+        }
+
+        function generateUniqueContractId() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let newId = "";
+            let isDuplicate = true;
+
+            while (isDuplicate) {
+                let randomStr = '';
+                for (let i = 0; i < 6; i++) {
+                    randomStr += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
+                newId = `CR-2026-${randomStr}`;
+                isDuplicate = contracts.some(c => c.contractId === newId);
+            }
+
+            return newId;
+        }
+
+        function saveContract(e) {
+            e.preventDefault();
+            const editIndex = parseInt(document.getElementById('editIndex').value);
+
+            const count = Number(document.getElementById('days').value) || 0;
+            const rate = Number(document.getElementById('rate').value) || 0;
+            const dep = Number(document.getElementById('deposit').value) || 0;
+            const sum = (count * rate) + dep;
+
+            const contractData = {
+                contractId: editIndex >= 0 ? contracts[editIndex].contractId : generateUniqueContractId(),
+                status: document.getElementById('status').value,
+                contractState: editIndex >= 0 ? contracts[editIndex].contractState : "Active",
+                isBreached: editIndex >= 0 ? (contracts[editIndex].isBreached || false) : false,
+                isPaid: document.getElementById('isPaidCheck').checked,
+                staffID: document.getElementById('staffID').value,
+                ownerID: document.getElementById('ownerID').value,
+                ownerUser: document.getElementById('ownerUser').value,
+                lesseeID: document.getElementById('lesseeID').value,
+                lesseeUser: document.getElementById('lesseeUser').value,
+                carInput: document.getElementById('carInput').value,
+                tuneStatus: document.getElementById('tuneStatus').value,
+                carPlate: document.getElementById('carPlate').value,
+                newCarPlate: editIndex >= 0 ? (contracts[editIndex].newCarPlate || "") : "",
+                breachReason: editIndex >= 0 ? (contracts[editIndex].breachReason || "") : "",
+                startDate: document.getElementById('startDate').value,
+                endDate: document.getElementById('endDate').value,
+                days: count,
+                rate: rate,
+                deposit: dep,
+                total: sum,
+                rules: document.getElementById('rules').value,
+                schedules: generatedSchedule
+            };
+
+            showLoadingOverlay();
+
+            if (typeof google !== 'undefined' && google.script && google.script.run) {
+                google.script.run
+                    .withSuccessHandler(function(updatedContracts) {
+                        showSuccessState(function() {
+                            closeFormModal();
+                            if (Array.isArray(updatedContracts)) {
+                                contracts = updatedContracts;
+                                renderTable();
+                            } else {
+                                fetchContractsFromSheet();
+                            }
+                        });
+                    })
+                    .withFailureHandler(function(err) {
+                        hideLoadingOverlay();
+                        alert("เกิดข้อผิดพลาดในการบันทึก: " + err.message);
+                    })
+                    .saveContractToSheet(contractData);
+            }
+        }
+
+        function showLoadingOverlay() {
+            document.getElementById('loadingSpinner').style.display = 'block';
+            document.getElementById('successCheckmark').style.display = 'none';
+            document.getElementById('loadingText').innerText = 'กำลังบันทึกข้อมูล...';
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+
+        function showSuccessState(callback) {
+            document.getElementById('loadingSpinner').style.display = 'none';
+            document.getElementById('successCheckmark').style.display = 'block';
+            document.getElementById('loadingText').innerText = 'บันทึกเรียบร้อยแล้ว!';
+            
+            setTimeout(function() {
+                hideLoadingOverlay();
+                if (callback) callback();
+            }, 1000);
+        }
+
+        function hideLoadingOverlay() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+
+        function copyContractDetailsText() {
+            if (!activeViewContract) return;
+            const c = activeViewContract;
+            const isInstallment = c.status === 'ผ่อน';
+            
+            let text = `**====== สัญญาการ${c.status}รถ ======**\n\n` +
+                       `**เลขที่สัญญา :** ${c.contractId}\n` +
+                       `**สถานะการชำระ :** ( ${c.isPaid ? '🟢 ชำระเงินเรียบร้อยแล้ว' : '🔴 ยังไม่ชำระเงิน'} )\n` +
+                       `**เจ้าหน้าที่ผู้ดูแล :** <@${c.staffID}>\n---\n` +
+                       `**ข้อมูล${isInstallment ? 'ผู้ปล่อยผ่อน' : 'ผู้ปล่อยเช่า'} :**\n` +
+                       `* **ชื่อ :** <@${c.ownerID}>\n* **Username :** ${c.ownerUser}\n` +
+                       `**ข้อมูล${isInstallment ? 'ผู้ผ่อน' : 'ผู้เช่า'} :**\n` +
+                       `* **ชื่อ :** <@${c.lesseeID}>\n* **Username :** ${c.lesseeUser}\n---\n` +
+                       `**รายละเอียดรถ:**\n` +
+                       `* **ประเภทรถ :** ${c.carInput} (${c.tuneStatus})\n* **ป้ายทะเบียน :** ${c.carPlate}\n` +
+                       `${c.newCarPlate ? `* **ทะเบียนใหม่ (หลังบิด):** ${c.newCarPlate}\n` : ''}` +
+                       `${c.breachReason ? `* **เหตุผลการบิด:** ${c.breachReason}\n` : ''}` +
+                       `---\n` +
+                       `**รายละเอียดการ${c.status} :**\n` +
+                       `* **วันที่เริ่ม :** ${c.startDate}\n* **วันที่สิ้นสุด :** ${c.endDate}\n* **ระยะเวลา :** ${c.days} งวด/วัน\n---\n` +
+                       `**รายละเอียดการชำระ :**\n` +
+                       `* **อัตราผ่อน/เช่า :** ${Number(c.rate).toLocaleString()} ฿\n` +
+                       `* **ค่ามัดจำ :** ${Number(c.deposit).toLocaleString()} ฿\n` +
+                       `* **รวมยอดชำระสุทธิ :** ${Number(c.total).toLocaleString()} ฿\n`;
+
+            if (c.rules) text += `---\n**เงื่อนไขเพิ่มเติม :** ${c.rules}\n`;
+            text += `**========================**`;
+
+            navigator.clipboard.writeText(text).then(() => {
+                document.getElementById('loadingSpinner').style.display = 'block';
+                document.getElementById('successCheckmark').style.display = 'none';
+                document.getElementById('loadingText').innerText = 'กำลังคัดลอกข้อมูล...';
+                document.getElementById('loadingOverlay').style.display = 'flex';
+
+                setTimeout(function() {
+                    document.getElementById('loadingSpinner').style.display = 'none';
+                    document.getElementById('successCheckmark').style.display = 'block';
+                    document.getElementById('loadingText').innerText = 'คัดลอกเรียบร้อยแล้ว!';
+                    
+                    setTimeout(function() {
+                        hideLoadingOverlay();
+                    }, 800);
+                }, 500);
+            });
+        }
+
+        function initFormDefault() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('startDate').value = today;
+            document.getElementById('startDate').min = today;
+            document.getElementById('endDate').min = today;
+            toggleMode();
+        }
+
+        function getStepDays() {
+            const isInstallment = document.getElementById('status').value === 'ผ่อน';
+            if (!isInstallment) return 1;
+            const type = document.getElementById('installmentType').value;
+            if (type === '2days') return 2;
+            if (type === 'day') return 1;
+            if (type === 'week') return 7;
+            if (type === 'month') return 30;
+            return 1;
+        }
+
+        function toggleMode() {
+            const isInstallment = document.getElementById('status').value === 'ผ่อน';
+            document.getElementById('labelOwnerHeader').innerHTML = `<span class="w-1.5 h-1.5 bg-pink-500 rounded-full mr-2"></span> ${isInstallment ? 'ผู้ปล่อยผ่อน' : 'ผู้ปล่อยเช่า'}`;
+            document.getElementById('labelLesseeHeader').innerHTML = `<span class="w-1.5 h-1.5 bg-purple-400 rounded-full mr-2"></span> ${isInstallment ? 'ผู้ผ่อน' : 'ผู้เช่า (Lessee)'}`;
+            
+            const installmentTypeContainer = document.getElementById('installmentTypeContainer');
+            const scheduleContainer = document.getElementById('scheduleContainer');
+            const autoDivideContainer = document.getElementById('autoDivideContainer');
+
+            if (isInstallment) {
+                installmentTypeContainer.classList.remove('hidden');
+                scheduleContainer.classList.remove('hidden');
+                autoDivideContainer.classList.remove('hidden');
+            } else {
+                installmentTypeContainer.classList.add('hidden');
+                scheduleContainer.classList.add('hidden');
+                autoDivideContainer.classList.add('hidden');
+                document.getElementById('autoDivideCheck').checked = false;
+                toggleAutoDivide();
+            }
+            calculateEndDateFromCount();
+        }
+
+        function toggleAutoDivide() {
+            const isChecked = document.getElementById('autoDivideCheck').checked;
+            const targetTotalBox = document.getElementById('targetTotalBox');
+            const rateInput = document.getElementById('rate');
+
+            if (isChecked) {
+                targetTotalBox.classList.remove('hidden');
+                rateInput.classList.add('input-disabled');
+                rateInput.readOnly = true;
+                calculateRateFromTarget();
+            } else {
+                targetTotalBox.classList.add('hidden');
+                rateInput.classList.remove('input-disabled');
+                rateInput.readOnly = false;
+                updateCalculations();
+            }
+        }
+
+        function calculateRateFromTarget() {
+            if (!document.getElementById('autoDivideCheck').checked) return;
+            const targetTotal = Number(document.getElementById('targetTotal').value) || 0;
+            const count = Math.max(1, Number(document.getElementById('days').value) || 1);
+            const calculatedRate = Math.round(targetTotal / count);
+            document.getElementById('rate').value = calculatedRate;
+            updateCalculations();
+        }
+
+        function onStartDateChange() {
+            const startDateVal = document.getElementById('startDate').value;
+            if (startDateVal) document.getElementById('endDate').min = startDateVal;
+            calculateEndDateFromCount();
+        }
+
+        function onInstallmentTypeChange() {
+            calculateEndDateFromCount();
+        }
+
+        function calculateEndDateFromCount() {
+            const startStr = document.getElementById('startDate').value;
+            const count = Math.max(1, parseInt(document.getElementById('days').value) || 1);
+            document.getElementById('days').value = count;
+
+            if (startStr) {
+                const startDate = new Date(startStr);
+                const stepDays = getStepDays();
+                const totalDays = (count * stepDays) - 1;
+                const endDate = new Date(startDate);
+                endDate.setDate(endDate.getDate() + totalDays);
+                document.getElementById('endDate').value = endDate.toISOString().split('T')[0];
+                
+                if (document.getElementById('autoDivideCheck').checked) {
+                    calculateRateFromTarget();
+                } else {
+                    updateCalculations();
+                }
+            }
+        }
+
+        function calculateDatesFromEndDate() {
+            const startStr = document.getElementById('startDate').value;
+            const endStr = document.getElementById('endDate').value;
+
+            if (startStr && endStr) {
+                const startDate = new Date(startStr);
+                const endDate = new Date(endStr);
+                if (endDate < startDate) {
+                    document.getElementById('endDate').value = startStr;
+                    return calculateDatesFromEndDate();
+                }
+
+                const diffDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+                const stepDays = getStepDays();
+                const count = Math.max(1, Math.floor(diffDays / stepDays));
+                document.getElementById('days').value = count;
+                
+                if (document.getElementById('autoDivideCheck').checked) {
+                    calculateRateFromTarget();
+                } else {
+                    updateCalculations();
+                }
+            }
+        }
+
+        function updateCalculations() {
+            const count = Number(document.getElementById('days').value) || 0;
+            const rate = Number(document.getElementById('rate').value) || 0;
+            const dep = Number(document.getElementById('deposit').value) || 0;
+
+            const totalSum = (count * rate) + dep;
+            document.getElementById('totalDisplay').innerText = totalSum.toLocaleString() + " ฿";
+
+            const isInstallment = document.getElementById('status').value === 'ผ่อน';
+            if (isInstallment) {
+                const startStr = document.getElementById('startDate').value;
+                if (startStr) generateInstallmentTable(new Date(startStr), count, getStepDays());
+            }
+        }
+
+        function formatShortThaiDate(dateObj) {
+            const d = dateObj.getDate();
+            const m = thaiMonths[dateObj.getMonth()];
+            const y = dateObj.getFullYear() + 543;
+            return `${d} ${m} ${y}`;
+        }
+
+        function generateInstallmentTable(startDate, totalInstallments, stepDays) {
+            const scheduleBody = document.getElementById('scheduleBody');
+            const rate = Number(document.getElementById('rate').value) || 0;
+            let currentBalance = totalInstallments * rate;
+            
+            scheduleBody.innerHTML = '';
+            generatedSchedule = [];
+            let curDate = new Date(startDate);
+
+            for (let i = 1; i <= totalInstallments; i++) {
+                let d1 = new Date(curDate);
+                let d2 = new Date(curDate);
+                d2.setDate(d2.getDate() + (stepDays - 1));
+
+                currentBalance = Math.max(0, currentBalance - rate);
+                const dateRangeStr = stepDays > 1 ? `${formatShortThaiDate(d1)} - ${formatShortThaiDate(d2)}` : formatShortThaiDate(d1);
+
+                const row = document.createElement('tr');
+                row.className = "hover:bg-purple-900/10";
+                row.innerHTML = `
+                    <td class="p-1 font-mono text-purple-300">${i}</td>
+                    <td class="p-1">${dateRangeStr}</td>
+                    <td class="p-1 text-right text-emerald-400 font-semibold">${rate.toLocaleString()}</td>
+                    <td class="p-1 text-right text-gray-400 font-mono">${currentBalance.toLocaleString()}</td>
+                `;
+                scheduleBody.appendChild(row);
+
+                generatedSchedule.push({
+                    index: i,
+                    dateRange: dateRangeStr,
+                    pay: rate,
+                    balance: currentBalance
+                });
+
+                curDate.setDate(curDate.getDate() + stepDays);
+            }
+            document.getElementById('installmentCount').innerText = `${totalInstallments} งวด`;
+        }
+
+        function showDropdown() { document.getElementById('carDropdown').classList.add('show'); }
+        function filterCars() {
+            const input = document.getElementById('carInput').value.toUpperCase();
+            const items = document.getElementsByClassName('dropdown-item');
+            for (let i = 0; i < items.length; i++) {
+                items[i].style.display = items[i].innerText.toUpperCase().includes(input) ? "" : "none";
+            }
+        }
+        function selectCar(name) {
+            document.getElementById('carInput').value = name;
+            document.getElementById('carDropdown').classList.remove('show');
+        }
+        function closeAllDropdowns(e) {
+            if (!e.target.closest('.relative')) document.getElementById('carDropdown').classList.remove('show');
+        }
+
+        window.onload = initSystem;
+    </script>
 </body>
 </html>
